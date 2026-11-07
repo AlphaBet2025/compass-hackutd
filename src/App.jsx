@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { customer } from "./data/customer.js";
+import { useEffect, useMemo, useState } from "react";
+import { customer as demoCustomer } from "./data/customer.js";
 import { getTotals, getHealth } from "./lib/health.js";
 import { runForecast, DEFAULT_ADJUST } from "./lib/forecast.js";
 import { getNextMove } from "./lib/nextMove.js";
@@ -11,7 +11,7 @@ import WhatIfSimulator from "./components/WhatIfSimulator.jsx";
 import NextMoveCard from "./components/NextMoveCard.jsx";
 import CoachChat from "./components/CoachChat.jsx";
 
-export default function App() {
+function Dashboard({ customer, source }) {
   const [adjust, setAdjust] = useState(DEFAULT_ADJUST);
 
   const totals = getTotals(customer);
@@ -35,6 +35,7 @@ export default function App() {
           <span className="logo">◎</span> Compass
         </div>
         <div className="who">
+          <span className={`source ${source}`}>{source === "nessie" ? "● Live: Capital One Nessie" : "● Demo data"}</span>
           <span className="avatar">JR</span> {customer.name}
         </div>
       </header>
@@ -67,4 +68,19 @@ export default function App() {
       </main>
     </div>
   );
+}
+
+// Loads the customer from our server (Nessie if switched on, otherwise demo data).
+export default function App() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/customer")
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => setData({ source: "demo", customer: demoCustomer }));
+  }, []);
+
+  if (!data) return <div className="loading">Loading your accounts…</div>;
+  return <Dashboard customer={data.customer} source={data.source} />;
 }

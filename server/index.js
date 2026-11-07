@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import { loadCustomerFromNessie } from "./nessie.js";
+import { customer as demoCustomer } from "../src/data/customer.js";
 
 const app = express();
 app.use(express.json({ limit: "100kb" }));
@@ -14,6 +16,20 @@ app.get("/api/status", (_req, res) => {
     nessieKeySet: Boolean(process.env.NESSIE_API_KEY),
     useNessie: process.env.USE_NESSIE === "true",
   });
+});
+
+// The customer the app shows. Nessie when USE_NESSIE=true, otherwise (or if
+// Nessie is down) the built-in demo customer, so the demo never breaks.
+app.get("/api/customer", async (_req, res) => {
+  if (process.env.USE_NESSIE === "true") {
+    try {
+      return res.json({ source: "nessie", customer: await loadCustomerFromNessie() });
+    } catch (err) {
+      console.error("Nessie failed, using demo data:", err.message);
+      return res.json({ source: "demo", reason: "nessie_unavailable", customer: demoCustomer });
+    }
+  }
+  res.json({ source: "demo", customer: demoCustomer });
 });
 
 // AI coach. The browser sends the chat + a text summary of the customer's numbers.
