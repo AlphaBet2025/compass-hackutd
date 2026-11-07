@@ -1,11 +1,20 @@
+import { useMemo, useState } from "react";
 import { customer } from "./data/customer.js";
 import { getTotals, getHealth } from "./lib/health.js";
+import { runForecast, DEFAULT_ADJUST } from "./lib/forecast.js";
 import AccountsOverview from "./components/AccountsOverview.jsx";
 import HealthScore from "./components/HealthScore.jsx";
+import ForecastChart from "./components/ForecastChart.jsx";
+import WhatIfSimulator from "./components/WhatIfSimulator.jsx";
 
 export default function App() {
+  const [adjust, setAdjust] = useState(DEFAULT_ADJUST);
+
   const totals = getTotals(customer);
-  const health = getHealth(customer);
+  const todayHealth = getHealth(customer);
+  const baseline = useMemo(() => runForecast(customer, DEFAULT_ADJUST), []);
+  const scenario = useMemo(() => runForecast(customer, adjust), [adjust]);
+  const changed = Object.keys(DEFAULT_ADJUST).some((k) => adjust[k] !== DEFAULT_ADJUST[k]);
 
   return (
     <div className="app">
@@ -26,7 +35,18 @@ export default function App() {
 
         <div className="grid">
           <AccountsOverview customer={customer} totals={totals} />
-          <HealthScore health={health} />
+          <HealthScore health={scenario.health} todayScore={todayHealth.score} />
+        </div>
+
+        <div className="grid grid-wide">
+          <WhatIfSimulator
+            customer={customer}
+            adjust={adjust}
+            setAdjust={setAdjust}
+            surplus={scenario.monthlySurplus}
+            overdrawn={scenario.overdrawn}
+          />
+          <ForecastChart points={scenario.points} baseline={baseline} changed={changed} />
         </div>
       </main>
     </div>

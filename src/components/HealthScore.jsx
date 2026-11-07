@@ -26,15 +26,22 @@ function Gauge({ score, label }) {
   );
 }
 
-export default function HealthScore({ health }) {
+export default function HealthScore({ health, todayScore }) {
+  const diff = health.score - todayScore;
   return (
     <section className="card">
       <div className="card-head">
         <h2>Financial health</h2>
-        <span className="muted small">out of 100</span>
+        <span className="muted small">projected in 12 months</span>
       </div>
 
       <Gauge score={health.score} label={health.label} />
+      <div className="today-line muted small">
+        Today: {todayScore}
+        {diff !== 0 && (
+          <span className={diff > 0 ? "up" : "down"}> · {diff > 0 ? "▲" : "▼"} {Math.abs(diff)} points</span>
+        )}
+      </div>
 
       <ul className="indicators">
         {health.indicators.map((i) => (
