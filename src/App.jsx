@@ -10,6 +10,7 @@ import WhatIfSimulator from "./components/WhatIfSimulator.jsx";
 import NextMoveCard from "./components/NextMoveCard.jsx";
 import CoachChat from "./components/CoachChat.jsx";
 import StressTest from "./components/StressTest.jsx";
+import SpendingCard from "./components/SpendingCard.jsx";
 import Hero from "./components/Hero.jsx";
 import Logo from "./components/Logo.jsx";
 import { people, getPerson } from "./data/customers.js";
@@ -116,7 +117,7 @@ export function Dashboard({ customer, source, theme, setTheme, personId, onSwitc
 
         <NextMoveCard move={move} applied={applied} onTry={() => setAdjust({ ...adjust, ...move.apply })} />
 
-        <div className="grid">
+        <div className="grid grid-equal">
           <AccountsOverview customer={customer} totals={totals} />
           <HealthScore today={todayHealth} projected={scenario.health} />
         </div>
@@ -130,16 +131,18 @@ export function Dashboard({ customer, source, theme, setTheme, personId, onSwitc
             overdrawn={scenario.overdrawn}
             shortfall={scenario.shortfall}
           />
-          <ForecastChart points={scenario.points} baseline={baseline} changed={changed} />
+          <div className="stack">
+            <ForecastChart points={scenario.points} baseline={baseline} changed={changed} />
+            <StressTest
+              customer={customer}
+              onAsk={(text) => {
+                setCoachAsk({ id: Date.now(), text });
+                document.getElementById("coach")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }}
+            />
+            <SpendingCard customer={customer} adjust={adjust} />
+          </div>
         </div>
-
-        <StressTest
-          customer={customer}
-          onAsk={(text) => {
-            setCoachAsk({ id: Date.now(), text });
-            document.getElementById("coach")?.scrollIntoView({ behavior: "smooth", block: "center" });
-          }}
-        />
 
         <CoachChat
           externalQuestion={coachAsk}

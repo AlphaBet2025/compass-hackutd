@@ -20,7 +20,7 @@ export default function WhatIfSimulator({ customer, adjust, setAdjust, surplus, 
   const changed = Object.keys(DEFAULT_ADJUST).some((k) => (adjust[k] ?? 0) !== DEFAULT_ADJUST[k]);
 
   return (
-    <section className="card">
+    <section className="card sim">
       <div className="card-head">
         <h2>What if…?</h2>
         {changed && (
