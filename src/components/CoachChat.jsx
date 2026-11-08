@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { offlineAnswer, offlinePlan } from "../lib/nextMove.js";
+import { offlineAnswer, offlinePlan, movePlan, asksToApply } from "../lib/nextMove.js";
 import { money } from "../lib/health.js";
 import { DEFAULT_ADJUST } from "../lib/forecast.js";
 
@@ -46,6 +46,16 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan, exte
   const [busy, setBusy] = useState(false);
   const listRef = useRef(null);
 
+  // A plan to show under the coach's reply. If the AI didn't attach one, we add the app's own
+  // recommended plan when the question is about paying debt, and re-offer the last plan when
+  // the customer says "apply it".
+  const planFor = (question, history) => {
+    const last = [...history].reverse().find((m) => m.role === "assistant" && m.plan)?.plan || null;
+    if (asksToApply(question)) return last || movePlan(customer);
+    if (/card|car\b|loan|toyota|first|pay off|debt|faster|extra/i.test(question)) return movePlan(customer);
+    return null;
+  };
+
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
@@ -81,12 +91,12 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan, exte
       });
       const data = await res.json();
       if (!res.ok || !data.reply) throw new Error(data.error || "failed");
-      setMessages([...next, { role: "assistant", text: data.reply, plan: data.plan || null }]);
+      setMessages([...next, { role: "assistant", text: data.reply, plan: data.plan || planFor(question, next) }]);
     } catch {
       // Friendly fallback: answer from the same numbers without the AI.
       setMessages([
         ...next,
-        { role: "assistant", offline: true, text: offlineAnswer(question, customer, adjust), plan: offlinePlan(question, customer) },
+        { role: "assistant", offline: true, text: offlineAnswer(question, customer, adjust), plan: planFor(question, next) || offlinePlan(question, customer) },
       ]);
     } finally {
       clearTimeout(timer);

@@ -156,10 +156,29 @@ export function getNextMove(c) {
   };
 }
 
+// The app's own recommended plan (the Toyota "next move"), in the same shape the coach uses.
+// It's null when the right answer is NOT to pay anything extra (for example, a cheap loan).
+export function movePlan(c) {
+  const move = getNextMove(c);
+  if (!move.apply) return null;
+  const where = Object.keys(move.apply)[0] === "extraCard" ? "credit card" : "Toyota loan";
+  return { ...move.apply, summary: `Add ${money(move.extra)}/month to the ${where}` };
+}
+
+// "Can you help me apply it?", "do it", "go ahead"…
+export const asksToApply = (q) => /\b(apply|do it|set it|set that|put it in|go ahead|make it happen|help me)\b/i.test(q);
+
 // Friendly answers when Gemini can't be reached. Uses the same real numbers.
 export function offlineAnswer(question, c, adjust) {
   const q = question.toLowerCase();
   const move = getNextMove(c);
+
+  if (asksToApply(q)) {
+    const p = movePlan(c);
+    return p
+      ? `Here's the plan: **${p.summary}**. Tap **Apply this plan** below and I'll set the sliders so you can see the forecast change.`
+      : `There's nothing extra to apply right now. ${move.headline} ${move.why}`;
+  }
   const health = getHealth(c);
   const weakest = [...health.indicators].sort((a, b) => a.score - b.score)[0];
   const a = c.accounts;
@@ -186,10 +205,8 @@ export function offlineAnswer(question, c, adjust) {
 export function offlinePlan(question, c) {
   const q = question.toLowerCase();
   const move = getNextMove(c);
-  if (/card|car|loan|toyota|first|pay off|debt|faster/.test(q) && move.apply) {
-    const key = Object.keys(move.apply)[0];
-    const where = key === "extraCard" ? "credit card" : "Toyota loan";
-    return { ...move.apply, summary: `Add ${money(move.extra)}/month to the ${where}` };
+  if ((asksToApply(q) || /card|car|loan|toyota|first|pay off|debt|faster/.test(q)) && move.apply) {
+    return movePlan(c);
   }
   if (/dining|eat|spend|cut|save|saving|emergency/.test(q)) {
     return { diningCut: 50, summary: "Cut dining out by 50%" };
