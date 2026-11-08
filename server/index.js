@@ -1,7 +1,6 @@
 import "dotenv/config";
 import express from "express";
 import { loadCustomerFromNessie } from "./nessie.js";
-import { customer as demoCustomer } from "../src/data/customer.js";
 import { SLIDERS } from "../src/data/simulatorConfig.js";
 import { getPerson } from "../src/data/customers.js";
 
@@ -23,19 +22,18 @@ app.get("/api/status", (_req, res) => {
 // The customer the app shows. Nessie when USE_NESSIE=true, otherwise (or if
 // Nessie is down) the built-in demo customer, so the demo never breaks.
 app.get("/api/customer", async (req, res) => {
-  // Maya and Dev are built-in sample customers. Jordan can come live from Nessie.
-  const id = String(req.query.id || "jordan");
-  if (id !== "jordan") return res.json({ source: "demo", customer: getPerson(id).data });
+  // Any of the three sample customers can come live from Nessie (if it's switched on).
+  const id = getPerson(String(req.query.id || "jordan")).id;
 
   if (process.env.USE_NESSIE === "true") {
     try {
-      return res.json({ source: "nessie", customer: await loadCustomerFromNessie() });
+      return res.json({ source: "nessie", customer: await loadCustomerFromNessie(id) });
     } catch (err) {
       console.error("Nessie failed, using demo data:", err.message);
-      return res.json({ source: "demo", reason: "nessie_unavailable", customer: demoCustomer });
+      return res.json({ source: "demo", reason: "nessie_unavailable", customer: getPerson(id).data });
     }
   }
-  res.json({ source: "demo", customer: demoCustomer });
+  res.json({ source: "demo", customer: getPerson(id).data });
 });
 
 // Never trust the model's numbers: snap them to the real slider ranges and steps.

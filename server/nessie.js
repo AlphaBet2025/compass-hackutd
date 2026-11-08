@@ -2,7 +2,7 @@
 // reaches the browser. Turns Nessie data into the same "customer" shape the
 // app already uses, so the rest of the app doesn't care where data came from.
 
-import { customer as demoCustomer } from "../src/data/customer.js";
+import { getPerson } from "../src/data/customers.js";
 
 const BASE = process.env.NESSIE_URL || "https://v2-prod-api.nessieisreal.com";
 
@@ -90,12 +90,25 @@ async function loadSpending(accounts) {
   return { totals, byMerchant, count };
 }
 
-export async function loadCustomerFromNessie() {
-  const [accounts, loans, bills] = await Promise.all([listAll("/accounts"), listAll("/loans"), listAll("/bills")]);
-  if (accounts.length === 0) throw new Error("Nessie has no accounts yet. Run: npm run seed:nessie");
+export async function loadCustomerFromNessie(personId = "jordan") {
+  // The demo profile supplies what Nessie has no place for (income, age); Nessie supplies the rest.
+  const base = getPerson(personId).data;
+  const [first, ...rest] = base.name.split(" ");
+  const last = rest.join(" ");
 
-  // Start from the demo profile (income, age, everyday spending), then overlay Nessie data.
-  const c = structuredClone(demoCustomer);
+  // Find this person's customer record in Nessie, then only THEIR accounts, loans and bills.
+  const customers = await listAll("/customers");
+  const me = customers.find((x) => x.first_name === first && x.last_name === last);
+  if (!me) throw new Error(`${base.name} isn't in Nessie yet. Run: npm run seed:nessie -- --reset`);
+
+  const [allAccounts, allLoans, allBills] = await Promise.all([listAll("/accounts"), listAll("/loans"), listAll("/bills")]);
+  const accounts = allAccounts.filter((x) => x.customer_id === me.id);
+  const ids = new Set(accounts.map((x) => x.id));
+  const loans = allLoans.filter((l) => ids.has(l.account_id));
+  const bills = allBills.filter((b) => ids.has(b.account_id));
+  if (accounts.length === 0) throw new Error(`${base.name} has no accounts in Nessie yet`);
+
+  const c = structuredClone(base);
   const a = c.accounts;
   const used = { savings: false, cd: false, ira: false };
 
