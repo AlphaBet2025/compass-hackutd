@@ -35,7 +35,7 @@ const planText = (p) =>
 
 const samePlan = (p, a) => Object.keys(DEFAULT_ADJUST).every((k) => (p[k] || 0) === (a[k] || 0));
 
-export default function CoachChat({ customer, context, adjust, onApplyPlan, externalQuestion }) {
+export default function CoachChat({ customer, context, adjust, onApplyPlan, externalQuestion, onExternalHandled }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -52,7 +52,10 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan, exte
 
   // Another card (like the stress test) can send the coach a question.
   useEffect(() => {
-    if (externalQuestion) send(externalQuestion.text);
+    if (externalQuestion) {
+      send(externalQuestion.text);
+      onExternalHandled?.();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalQuestion?.id]);
 

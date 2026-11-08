@@ -4,7 +4,7 @@ import { getRunway } from "../lib/stress.js";
 const tone = (score) => (score >= 75 ? "good" : score >= 45 ? "ok" : "risky");
 
 // Turns **bold** in a sentence into <strong>.
-function Bold({ text }) {
+export function Bold({ text }) {
   return text.split(/(\*\*[^*]+\*\*)/g).map((p, i) => (p.startsWith("**") ? <strong key={i}>{p.slice(2, -2)}</strong> : <span key={i}>{p}</span>));
 }
 

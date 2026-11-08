@@ -3,6 +3,7 @@ import { getTotals, getHealth, money } from "./lib/health.js";
 import { runForecast, DEFAULT_ADJUST } from "./lib/forecast.js";
 import { getNextMove } from "./lib/nextMove.js";
 import { buildCoachContext } from "./lib/coachContext.js";
+import { getRunway } from "./lib/stress.js";
 import AccountsOverview from "./components/AccountsOverview.jsx";
 import HealthScore from "./components/HealthScore.jsx";
 import ForecastChart from "./components/ForecastChart.jsx";
@@ -11,13 +12,20 @@ import NextMoveCard from "./components/NextMoveCard.jsx";
 import CoachChat from "./components/CoachChat.jsx";
 import StressTest from "./components/StressTest.jsx";
 import SpendingCard from "./components/SpendingCard.jsx";
-import Hero from "./components/Hero.jsx";
+import Hero, { Bold } from "./components/Hero.jsx";
+import CompassHub from "./components/CompassHub.jsx";
+import ShopView from "./components/ShopView.jsx";
+import StoryView from "./components/StoryView.jsx";
 import Logo from "./components/Logo.jsx";
 import { people, getPerson } from "./data/customers.js";
 
-// ✋ YOUR TURN: a temporary "Look" switcher so you can compare designs. Once you pick one,
+// ✋ YOUR TURN: a temporary "Look" switcher for the Classic view. Once you pick one,
 // tell me and I'll remove the switcher and make it the default.
 const THEMES = [["daylight", "Daylight"], ["midnight", "Midnight"], ["toyota", "Red"]];
+
+// The same app, four ways. Compass is the main view; the others are alternate views of the same data.
+const VIEWS = [["hub", "Compass"], ["shop", "Shop"], ["story", "Story"], ["classic", "Classic"]];
+const MODE_CLASS = { hub: " hub-mode", shop: " shop-mode", story: " story-mode", classic: "" };
 
 // The name in the top bar opens a small card about the customer.
 function ProfileMenu({ customer, source, personId, onSwitch }) {
@@ -76,10 +84,33 @@ function useTheme() {
   return [theme, setTheme];
 }
 
+// Remembers which view you picked (new visitors start on Compass). A link like /?view=shop opens straight to one.
+function useView() {
+  const [view, setView] = useState(() => {
+    const valid = (v) => VIEWS.some(([id]) => id === v);
+    try {
+      const fromLink = new URLSearchParams(window.location.search).get("view");
+      if (valid(fromLink)) return fromLink;
+      const saved = localStorage.getItem("compass-view");
+      if (valid(saved)) return saved;
+    } catch { /* fall through */ }
+    return "hub";
+  });
+  useEffect(() => {
+    try { localStorage.setItem("compass-view", view); } catch { /* fine without it */ }
+  }, [view]);
+  return [view, setView];
+}
+
 export function Dashboard({ customer, source, theme, setTheme, personId, onSwitch }) {
   const [adjustRaw, setAdjust] = useState(DEFAULT_ADJUST);
   const adjust = { ...DEFAULT_ADJUST, ...adjustRaw }; // fills in any missing slider with 0
   const [coachAsk, setCoachAsk] = useState(null); // lets other cards send a question to the coach
+  const [view, setView] = useView();
+  const query = (() => { try { return new URLSearchParams(window.location.search); } catch { return new URLSearchParams(); } })();
+  // Which section is picked (compass heading / shop product). /?section=whatif opens straight to one.
+  const [section, setSection] = useState(query.get("section") || "move");
+  const [shopOpen, setShopOpen] = useState(query.get("open") === "1");
 
   const totals = getTotals(customer);
   const todayHealth = getHealth(customer);
@@ -95,66 +126,171 @@ export function Dashboard({ customer, source, theme, setTheme, personId, onSwitc
     [scenario, baseline, adjust, todayHealth]
   );
 
+  // Take the user to a section, whichever view they're in.
+  const go = (id) => {
+    setSection(id);
+    if (view === "shop") setShopOpen(true);
+    else if (view === "story") document.getElementById(`scene-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    else if (view === "classic") document.getElementById(id === "coach" ? "coach" : "whatif")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+  const applyMove = () => {
+    setAdjust({ ...adjust, ...move.apply });
+    if (view !== "classic") go("whatif");
+  };
+  const applyPlan = (p) => {
+    setAdjust(Object.fromEntries(Object.keys(DEFAULT_ADJUST).map((k) => [k, p[k] || 0])));
+    go("whatif");
+  };
+  const askCoach = (text) => {
+    setCoachAsk({ id: Date.now(), text });
+    go("coach");
+  };
+
+  const first = customer.name.split(" ")[0];
+  const run = getRunway(customer);
+  const forecastCard = <ForecastChart points={scenario.points} baseline={baseline} changed={changed} />;
+  const simulator = (
+    <WhatIfSimulator
+      customer={customer}
+      adjust={adjust}
+      setAdjust={setAdjust}
+      surplus={scenario.monthlySurplus}
+      overdrawn={scenario.overdrawn}
+      shortfall={scenario.shortfall}
+    />
+  );
+  const coach = (
+    <CoachChat
+      externalQuestion={coachAsk}
+      onExternalHandled={() => setCoachAsk(null)}
+      customer={customer}
+      context={context}
+      adjust={adjust}
+      onApplyPlan={applyPlan}
+    />
+  );
+
+  // Every feature as one piece, so each view can lay them out its own way.
+  const panels = {
+    move: <NextMoveCard move={move} applied={applied} onTry={applyMove} />,
+    health: <HealthScore today={todayHealth} projected={scenario.health} />,
+    forecast: forecastCard,
+    whatif: (
+      <div className="hub-stack">
+        {simulator}
+        {forecastCard}
+      </div>
+    ),
+    stress: <StressTest customer={customer} onAsk={askCoach} />,
+    spending: <SpendingCard customer={customer} adjust={adjust} />,
+    accounts: <AccountsOverview customer={customer} totals={totals} />,
+    coach,
+  };
+
+  // Small live numbers shown on the shop shelves.
+  const spend = customer.monthlySpending;
+  const everyday = (spend.groceries || 0) + (spend.dining || 0) + (spend.transport || 0) + (spend.other || 0);
+  const gain = scenario.end.netWorth - totals.netWorth;
+  const nChanges = Object.keys(DEFAULT_ADJUST).filter((k) => adjust[k] !== DEFAULT_ADJUST[k]).length;
+  const shopStats = {
+    move: move.interestSaved ? `Saves about ${money(move.interestSaved)}` : "Your best next step",
+    health: `${todayHealth.score} / 100 · ${todayHealth.label}`,
+    forecast: `${gain >= 0 ? "+" : "−"}${money(Math.abs(gain))} in 12 months`,
+    whatif: nChanges ? `${nChanges} change${nChanges > 1 ? "s" : ""} in your plan` : "Nothing set yet",
+    stress: `${run.nowMonths.toFixed(1)} months of runway`,
+    spending: `${money(everyday)} a month`,
+    accounts: `${money(totals.netWorth)} net worth`,
+    coach: "Ask it anything",
+  };
+
   return (
-    <div className="app">
+    <div className={`app${MODE_CLASS[view] || ""}`}>
       <header className="topbar">
         <div className="brand">
           <Logo /> Compass
         </div>
         <div className="who">
-          <div className="looks" role="group" aria-label="Choose a look">
-            {THEMES.map(([id, label]) => (
-              <button key={id} aria-pressed={theme === id} onClick={() => setTheme(id)}>{label}</button>
+          <div className="looks" role="group" aria-label="Choose a view">
+            {VIEWS.map(([id, label]) => (
+              <button key={id} aria-pressed={view === id} onClick={() => setView(id)}>{label}</button>
             ))}
           </div>
+          {view === "classic" && (
+            <div className="looks" role="group" aria-label="Choose a look">
+              {THEMES.map(([id, label]) => (
+                <button key={id} aria-pressed={theme === id} onClick={() => setTheme(id)}>{label}</button>
+              ))}
+            </div>
+          )}
           <span className={`source ${source}`}>{source === "nessie" ? "● Live: Capital One Nessie" : "● Demo data"}</span>
           <ProfileMenu customer={customer} source={source} personId={personId} onSwitch={onSwitch} />
         </div>
       </header>
 
-      <main className="container">
-        <Hero customer={customer} totals={totals} health={todayHealth} move={move} />
-
-        <NextMoveCard move={move} applied={applied} onTry={() => setAdjust({ ...adjust, ...move.apply })} />
-
-        <div className="grid grid-equal">
-          <AccountsOverview customer={customer} totals={totals} />
-          <HealthScore today={todayHealth} projected={scenario.health} />
-        </div>
-
-        <div className="grid grid-wide" id="whatif">
-          <WhatIfSimulator
-            customer={customer}
-            adjust={adjust}
-            setAdjust={setAdjust}
-            surplus={scenario.monthlySurplus}
-            overdrawn={scenario.overdrawn}
-            shortfall={scenario.shortfall}
-          />
-          <div className="stack">
-            <ForecastChart points={scenario.points} baseline={baseline} changed={changed} />
-            <StressTest
-              customer={customer}
-              onAsk={(text) => {
-                setCoachAsk({ id: Date.now(), text });
-                document.getElementById("coach")?.scrollIntoView({ behavior: "smooth", block: "center" });
-              }}
-            />
-            <SpendingCard customer={customer} adjust={adjust} />
-          </div>
-        </div>
-
-        <CoachChat
-          externalQuestion={coachAsk}
-          customer={customer}
-          context={context}
-          adjust={adjust}
-          onApplyPlan={(p) => {
-            setAdjust(Object.fromEntries(Object.keys(DEFAULT_ADJUST).map((k) => [k, p[k] || 0])));
-            document.getElementById("whatif")?.scrollIntoView({ behavior: "smooth", block: "center" });
-          }}
+      {view === "hub" && (
+        <CompassHub
+          selected={section}
+          onSelect={setSection}
+          greeting={
+            <div className="hub-greet">
+              <h1>Good to see you, {first}.</h1>
+              <p className="insight">
+                <strong>Your biggest opportunity:</strong> <Bold text={move.insight} />
+              </p>
+            </div>
+          }
+          stats={
+            <>
+              <div className="hub-stat"><span>Net worth</span><b>{money(totals.netWorth)}</b></div>
+              <div className="hub-stat"><span>Health today</span><b>{todayHealth.score}<small> / 100</small></b></div>
+              <div className="hub-stat"><span>Runway</span><b>{run.nowMonths.toFixed(1)}<small> mo</small></b></div>
+            </>
+          }
+          panels={panels}
         />
-      </main>
+      )}
+
+      {view === "shop" && (
+        <ShopView
+          first={first}
+          panels={panels}
+          stats={shopStats}
+          selected={section}
+          open={shopOpen}
+          onOpen={(id) => { setSection(id); setShopOpen(true); }}
+          onClose={() => setShopOpen(false)}
+          adjust={adjust}
+          setAdjust={setAdjust}
+          scenario={scenario}
+          baseline={baseline}
+        />
+      )}
+
+      {view === "story" && <StoryView first={first} totals={totals} health={todayHealth} move={move} run={run} panels={panels} />}
+
+      {view === "classic" && (
+        <main className="container">
+          <Hero customer={customer} totals={totals} health={todayHealth} move={move} />
+
+          <NextMoveCard move={move} applied={applied} onTry={applyMove} />
+
+          <div className="grid grid-equal">
+            <AccountsOverview customer={customer} totals={totals} />
+            <HealthScore today={todayHealth} projected={scenario.health} />
+          </div>
+
+          <div className="grid grid-wide" id="whatif">
+            {simulator}
+            <div className="stack">
+              {forecastCard}
+              <StressTest customer={customer} onAsk={askCoach} />
+              <SpendingCard customer={customer} adjust={adjust} />
+            </div>
+          </div>
+
+          {coach}
+        </main>
+      )}
     </div>
   );
 }

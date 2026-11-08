@@ -31,7 +31,18 @@ Same engine, different advice. Click the customer's name in the top bar to switc
 | **Stress test** | "What if your paycheck stopped?" Shows how many months of runway there are today, on essentials only, and if the CD is cashed out. One click sends the question to the coach. |
 | **Where your money goes** | Spending by category from real Nessie transactions, with the top merchants. The bars shrink as you drag the cut sliders. |
 
-Compass comes in three looks (Daylight, Midnight and Red), switchable from the top bar, and works on a phone-width screen.
+## Four ways to explore it
+
+**Compass** is the main view. The same data and features are also available as three alternate views, depending on how someone likes to explore. Switch any time from the top bar:
+
+| View | What it is |
+|---|---|
+| **Compass** (main) | The whole app as an interactive compass. Steer to a heading and the needle swings to it while that section opens. |
+| **Story** | One long cinematic scroll. A huge greeting and a counting-up net worth open it, then six full-screen scenes: where you stand, how healthy, the move, the future, the storm, and ask. |
+| **Shop** | "Compass Market": every feature is a product on a shelf. Open one to use it. Your what-if plan is the shopping cart. |
+| **Classic** | The original single page of cards, with three colour looks (Daylight, Midnight, Red). |
+
+Every view uses the same live data, and all of them work on a phone-width screen. You can link straight to one, for example `/?view=shop`.
 
 ## Tracks entered
 
@@ -42,12 +53,13 @@ Compass comes in three looks (Daylight, Midnight and Red), switchable from the t
 
 ## Try it in 60 seconds
 
-1. Open the app. Read the **biggest opportunity** line at the top.
-2. In the red **Toyota next move** card, click **Try $500/mo in the simulator**. Watch the forecast and health score change.
-3. Drag **Cut dining out** and watch the **Where your money goes** bar shrink.
-4. In the coach, click *"Should I pay my card or my car loan first?"* and then **Apply this plan**.
-5. Click **Run the stress test**.
+1. Open the app. It opens on the **Compass** view with the needle pointing at **Next move**. Read the **biggest opportunity** line.
+2. In the red Toyota card, click **Try $500/mo in the simulator**. The needle swings to **What if**, and the forecast and health score change.
+3. Drag **Cut dining out** and watch the numbers move.
+4. Click the **Coach** button on the compass, click *"Should I pay my card or my car loan first?"*, and then **Apply this plan**.
+5. Click **Stress test** on the compass, then **Run the stress test**.
 6. Click the name in the top right and switch to **Maya** or **Dev** to see different advice.
+7. Use the switcher at the top to try the alternate views: **Story**, **Shop** and **Classic**.
 
 ## Run it locally
 
