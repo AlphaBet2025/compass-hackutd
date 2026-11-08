@@ -27,6 +27,7 @@
   --track: #e8ecf4;
   --top-a: #0b2a8a;
   --top-b: #2557f6;
+  --chart-net: #2557f6;
   --shadow: 0 1px 2px rgba(15, 27, 45, 0.04), 0 10px 28px rgba(15, 27, 45, 0.07);
 }
 
@@ -55,6 +56,7 @@
   --track: #25314d;
   --top-a: #0a1020;
   --top-b: #1b2c5a;
+  --chart-net: #6b97ff;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
@@ -83,6 +85,7 @@
   --track: #f0e6e3;
   --top-a: #3b0f16;
   --top-b: #c8102e;
+  --chart-net: #24408e; /* navy, so it can't be confused with the red debt line */
   --shadow: 0 1px 2px rgba(60, 20, 20, 0.05), 0 10px 28px rgba(60, 20, 20, 0.08);
 }
 
@@ -366,3 +369,10 @@ body {
 .spend-cut { background: var(--good); opacity: 0.55; height: 100%; transition: width 0.4s ease; }
 .spend-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; }
 .spend-note { margin-top: 6px; line-height: 1.4; }
+
+/* accounts: this month's cash flow */
+.flow { margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: var(--soft); }
+.flow-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.9px; color: var(--muted); margin-bottom: 8px; }
+.flow-row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 14px; font-variant-numeric: tabular-nums; }
+.flow-row.total { margin-top: 6px; padding-top: 9px; border-top: 1px solid var(--line); font-weight: 700; }
+.flow-row.total b { color: var(--good); }

@@ -22,7 +22,7 @@ Same engine, different advice. Click the customer's name in the top bar to switc
 
 | Feature | What you get |
 |---|---|
-| **Account overview** | Every account and debt in one place, with net worth. |
+| **Account overview** | Every account and debt in one place, with net worth, plus a "Your month" summary: take-home pay, spending, debt payments and what's left over. |
 | **Financial health score** | A 0–100 score from four indicators: emergency fund (months of cushion), credit utilization, debt-to-income, and savings rate. The big gauge is **today's** score. A smaller number and a tick on each bar show where it lands in 12 months. |
 | **12-month forecast** | A chart of cash, debt and net worth, including interest on the card and the loan. |
 | **"What if…?" simulator** | Seven sliders (cut dining, groceries, transport or shopping; extra credit-card payment; extra Toyota-loan payment; income change). The forecast, health score and spending bars update live. If a plan would overdraw checking, it says in which month and by how much. |
@@ -30,6 +30,8 @@ Same engine, different advice. Click the customer's name in the top bar to switc
 | **AI coach (Gemini)** | Ask things like *"Should I pay my card or my car loan first?"* The coach reads the customer's real numbers, spending by merchant and the current what-if settings. When it recommends something, it attaches an **Apply this plan** button that moves the sliders. If the API fails, a built-in fallback answers from the same numbers. |
 | **Stress test** | "What if your paycheck stopped?" Shows how many months of runway there are today, on essentials only, and if the CD is cashed out. One click sends the question to the coach. |
 | **Where your money goes** | Spending by category from real Nessie transactions, with the top merchants. The bars shrink as you drag the cut sliders. |
+
+Compass comes in three looks (Daylight, Midnight and Red), switchable from the top bar, and works on a phone-width screen.
 
 ## Tracks entered
 

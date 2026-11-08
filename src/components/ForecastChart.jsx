@@ -5,7 +5,7 @@ import { money } from "../lib/health.js";
 const COLORS = {
   cash: "var(--good)", // checking + savings + CD
   debt: "var(--risky)", // card + car loan
-  netWorth: "var(--brand)",
+  netWorth: "var(--chart-net)",
   baseline: "var(--muted)",
 };
 

@@ -15,6 +15,9 @@ function Row({ icon, label, sub, amount, debt }) {
 
 export default function AccountsOverview({ customer, totals }) {
   const a = customer.accounts;
+  const spending = Object.values(customer.monthlySpending).reduce((s, n) => s + n, 0);
+  const debtPayments = a.creditCard.monthlyPayment + a.autoLoan.monthlyPayment;
+  const leftOver = customer.monthlyNetIncome - spending - debtPayments;
   return (
     <section className="card">
       <div className="card-head">
@@ -54,6 +57,14 @@ export default function AccountsOverview({ customer, totals }) {
           amount={a.autoLoan.balance}
         />
       </ul>
+
+      <div className="flow">
+        <div className="flow-title">Your month</div>
+        <div className="flow-row"><span>Take-home pay</span><span>{money(customer.monthlyNetIncome)}</span></div>
+        <div className="flow-row"><span>Spending &amp; bills</span><span>−{money(spending)}</span></div>
+        <div className="flow-row"><span>Debt payments</span><span>−{money(debtPayments)}</span></div>
+        <div className="flow-row total"><span>Left over</span><b>{leftOver >= 0 ? "" : "−"}{money(Math.abs(leftOver))}</b></div>
+      </div>
     </section>
   );
 }
