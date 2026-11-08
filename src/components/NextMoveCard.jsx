@@ -1,9 +1,11 @@
 import { money } from "../lib/health.js";
 
 export default function NextMoveCard({ move, onTry, applied }) {
-  const max = Math.max(move.cardApr, move.loanApr);
+  const max = Math.max(...move.rates.map((r) => r.pct));
+  const monthsSooner = move.slowMonths - move.payoffMonths;
+
   return (
-    <section className="move">
+    <section className="move" aria-label="Your next move">
       <div className="move-left">
         <div className="move-tag">TOYOTA · YOUR NEXT MOVE</div>
         <h2>{move.headline}</h2>
@@ -15,28 +17,31 @@ export default function NextMoveCard({ move, onTry, applied }) {
           ))}
         </ol>
 
-        {move.cardFirst && (
+        {move.apply && (
           <div className="move-actions">
             <button className="btn" onClick={onTry} disabled={applied}>
               {applied ? "✓ Applied in the simulator below" : `Try ${money(move.extra)}/mo in the simulator`}
             </button>
             {move.interestSaved ? (
-              <span className="move-save">Saves about <b>{money(move.interestSaved)}</b> in total interest and clears the card <b>{move.slowMonths - move.payoffMonths} months sooner</b></span>
+              <span className="move-save">
+                Saves about <b>{money(move.interestSaved)}</b> in total interest
+                {monthsSooner > 0 && (
+                  <> and finishes <b>{monthsSooner} months sooner</b></>
+                )}
+              </span>
             ) : null}
           </div>
         )}
       </div>
 
       <div className="move-right">
-        <div className="rate">
-          <div className="rate-top"><span>Credit card</span><b>{move.cardApr}% APR</b></div>
-          <div className="rate-bar"><div className="rate-fill hot" style={{ width: `${(move.cardApr / max) * 100}%` }} /></div>
-        </div>
-        <div className="rate">
-          <div className="rate-top"><span>Toyota auto loan</span><b>{move.loanApr}% APR</b></div>
-          <div className="rate-bar"><div className="rate-fill cool" style={{ width: `${(move.loanApr / max) * 100}%` }} /></div>
-        </div>
-        <div className="rate-gap">{move.spread.toFixed(1)} points more expensive</div>
+        {move.rates.map((r) => (
+          <div className="rate" key={r.label}>
+            <div className="rate-top"><span>{r.label}</span><b>{r.pct}%</b></div>
+            <div className="rate-bar"><div className={`rate-fill ${r.tone}`} style={{ width: `${(r.pct / max) * 100}%` }} /></div>
+          </div>
+        ))}
+        <div className="rate-gap">{move.rateNote}</div>
       </div>
     </section>
   );

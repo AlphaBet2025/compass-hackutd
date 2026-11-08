@@ -11,5 +11,6 @@ export const SLIDERS = [
   { key: "transportCut", spendKey: "transport", label: "Cut transport", min: 0, max: 40, step: 5, hint: "Fewer rideshares, carpool, cheaper insurance." },
   { key: "otherCut", spendKey: "other", label: "Cut shopping & other", min: 0, max: 100, step: 5, hint: "Fewer impulse buys." },
   { key: "extraCard", label: "Extra credit-card payment", min: 0, max: 1000, step: 25, hint: "On top of your usual payment, every month." },
+  { key: "extraLoan", label: "Extra Toyota loan payment", min: 0, max: 1000, step: 25, hint: "On top of your usual car payment, every month." },
   { key: "incomeChange", label: "Income change", min: -30, max: 30, step: 1, hint: "A raise, a side gig, or a pay cut." },
 ];

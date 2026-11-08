@@ -20,7 +20,7 @@ export default function ForecastChart({ points, baseline, changed }) {
     <section className="card">
       <div className="card-head">
         <h2>12-month forecast</h2>
-        <span className="muted small">balances and debts</span>
+        <span className="muted small">Balances and debts</span>
       </div>
 
       <div className="stats">

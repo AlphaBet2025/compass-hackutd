@@ -35,7 +35,7 @@ export default function HealthScore({ today, projected }) {
     <section className="card">
       <div className="card-head">
         <h2>Financial health</h2>
-        <span className="muted small">today, out of 100</span>
+        <span className="muted small">Today, out of 100</span>
       </div>
 
       <Gauge score={today.score} label={today.label} />

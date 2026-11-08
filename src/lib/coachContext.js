@@ -35,11 +35,11 @@ ${c.spendingSource === "nessie" ? `(Everyday spending comes from ${c.spendingTra
 FINANCIAL HEALTH SCORE TODAY: ${health.score}/100 (${health.label})
 ${health.indicators.map((i) => `- ${i.label}: ${i.display} (${i.score}/100, ${i.target})`).join("\n")}
 
-COMPASS'S TOYOTA NEXT MOVE: ${move.headline} ${move.why}${move.cardFirst ? ` Suggested: extra ${money(move.extra)}/month on the card, paid off in ~${move.payoffMonths} months, saving ~${money(move.interestSaved ?? 0)} in total interest over the life of the debt (paying the usual ${money(a.creditCard.monthlyPayment)}/month would take ${move.slowMonths} months). The ${money(a.creditCard.monthlyPayment)} is the customer's usual payment, not a bank-required minimum.` : ""}
+COMPASS'S TOYOTA NEXT MOVE: ${move.headline} ${move.why}${move.apply ? ` Suggested: extra ${money(move.extra)}/month on the ${move.kind === "card-first" ? "credit card" : "Toyota loan"}, paid off in ~${move.payoffMonths} months instead of ${move.slowMonths}, saving ~${money(move.interestSaved ?? 0)} in total interest over the life of the debt. The customer's usual payment is their own choice, not a bank-required minimum.` : ""}
 
 STRESS TEST (if income stopped today): checking+savings ${money(run.liquid)} last ~${run.nowMonths.toFixed(1)} months at current spending, ~${run.leanMonths.toFixed(1)} months on essentials only (rent, groceries, utilities, transport plus debt payments of ${money(a.creditCard.monthlyPayment + a.autoLoan.monthlyPayment)}), ~${run.cdMonths.toFixed(1)} months if the CD is also cashed out (penalty may apply). A safe goal is 6 months; the gap on essentials is ~${money(run.gapToGoal)}.
 
 12-MONTH FORECAST (no changes): net worth ${money(scenario.baselineEnd.netWorth)}, debt ${money(scenario.baselineEnd.debt)}
-${changed ? `USER IS CURRENTLY TRYING A WHAT-IF: cut dining ${adjust.diningCut}%, groceries ${adjust.groceriesCut}%, transport ${adjust.transportCut}%, shopping/other ${adjust.otherCut}%, extra card payment ${money(adjust.extraCard)}/month, income change ${adjust.incomeChange}%. Result: net worth ${money(scenario.end.netWorth)}, debt ${money(scenario.end.debt)}, projected score ${scenario.health.score}.` : "No what-if scenario is active."}
+${changed ? `USER IS CURRENTLY TRYING A WHAT-IF: cut dining ${adjust.diningCut}%, groceries ${adjust.groceriesCut}%, transport ${adjust.transportCut}%, shopping/other ${adjust.otherCut}%, extra card payment ${money(adjust.extraCard)}/month, extra Toyota loan payment ${money(adjust.extraLoan)}/month, income change ${adjust.incomeChange}%. Result: net worth ${money(scenario.end.netWorth)}, debt ${money(scenario.end.debt)}, projected score ${scenario.health.score}.` : "No what-if scenario is active."}
 `.trim();
 }

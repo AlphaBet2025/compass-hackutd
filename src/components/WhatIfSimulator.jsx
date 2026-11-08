@@ -4,7 +4,7 @@ import { DEFAULT_ADJUST } from "../lib/forecast.js";
 import { money } from "../lib/health.js";
 
 function valueText(slider, v, customer) {
-  if (slider.key === "extraCard") return `+${money(v)}/mo`;
+  if (slider.key === "extraCard" || slider.key === "extraLoan") return `+${money(v)}/mo`;
   if (slider.spendKey) {
     const saved = (customer.monthlySpending[slider.spendKey] * v) / 100;
     return v === 0 ? "No change" : `−${v}% (saves ${money(saved)}/mo)`;

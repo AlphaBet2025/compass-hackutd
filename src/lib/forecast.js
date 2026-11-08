@@ -10,6 +10,7 @@ export const DEFAULT_ADJUST = {
   transportCut: 0,
   otherCut: 0,
   extraCard: 0,
+  extraLoan: 0,
   incomeChange: 0,
 };
 
@@ -56,7 +57,7 @@ export function runForecast(c, adj = DEFAULT_ADJUST, months = 12) {
     loan += (loan * a.autoLoan.apr) / 1200;
 
     const cardPay = Math.min(card, a.creditCard.monthlyPayment + adj.extraCard);
-    const loanPay = Math.min(loan, a.autoLoan.monthlyPayment);
+    const loanPay = Math.min(loan, a.autoLoan.monthlyPayment + (adj.extraLoan || 0));
     card -= cardPay;
     loan -= loanPay;
 
@@ -85,7 +86,7 @@ export function runForecast(c, adj = DEFAULT_ADJUST, months = 12) {
       creditCard: {
         ...a.creditCard,
         balance: card,
-        monthlyPayment: card > 0.5 ? a.creditCard.monthlyPayment + adj.extraCard : 0,
+        monthlyPayment: card > 0.5 ? a.creditCard.monthlyPayment : 0, // extra payments count as saving, not spending
       },
       autoLoan: {
         ...a.autoLoan,
@@ -99,7 +100,7 @@ export function runForecast(c, adj = DEFAULT_ADJUST, months = 12) {
     points,
     end: points[points.length - 1],
     health: getHealth(endCustomer),
-    monthlySurplus: net - spending - a.creditCard.monthlyPayment - adj.extraCard - a.autoLoan.monthlyPayment,
+    monthlySurplus: net - spending - a.creditCard.monthlyPayment - adj.extraCard - a.autoLoan.monthlyPayment - (adj.extraLoan || 0),
     overdrawn,
   };
 }

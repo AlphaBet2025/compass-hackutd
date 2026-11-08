@@ -3,12 +3,16 @@ import { getRunway } from "../lib/stress.js";
 
 const tone = (score) => (score >= 75 ? "good" : score >= 45 ? "ok" : "risky");
 
+// Turns **bold** in a sentence into <strong>.
+function Bold({ text }) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((p, i) => (p.startsWith("**") ? <strong key={i}>{p.slice(2, -2)}</strong> : <span key={i}>{p}</span>));
+}
+
 // The top of the page: a greeting, ONE sentence about the biggest opportunity,
 // and the three numbers that matter most.
 export default function Hero({ customer, totals, health, move }) {
   const first = customer.name.split(" ")[0];
   const run = getRunway(customer);
-  const weakest = [...health.indicators].sort((a, b) => a.score - b.score)[0];
 
   return (
     <section className="hero" aria-labelledby="hello">
@@ -16,17 +20,7 @@ export default function Hero({ customer, totals, health, move }) {
 
       {/* ✋ YOUR TURN: this sentence is the first thing a judge reads. Put it in your own words. */}
       <p className="insight">
-        {move.cardFirst ? (
-          <>
-            <strong>Your biggest opportunity:</strong> your credit card costs <strong>{move.cardApr}%</strong> a year, almost{" "}
-            {(move.cardApr / move.loanApr).toFixed(0)}× your Toyota loan. Paying it down first could save about{" "}
-            <strong>{money(move.interestSaved ?? 0)}</strong> in interest.
-          </>
-        ) : (
-          <>
-            <strong>Your biggest opportunity:</strong> your {weakest.label.toLowerCase()} is the weakest spot at {weakest.display}.
-          </>
-        )}
+        <strong>Your biggest opportunity:</strong> <Bold text={move.insight} />
       </p>
 
       <div className="kpis">

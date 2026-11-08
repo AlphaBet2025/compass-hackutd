@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { customer as demoCustomer } from "./data/customer.js";
 import { getTotals, getHealth, money } from "./lib/health.js";
 import { runForecast, DEFAULT_ADJUST } from "./lib/forecast.js";
 import { getNextMove } from "./lib/nextMove.js";
@@ -13,13 +12,14 @@ import CoachChat from "./components/CoachChat.jsx";
 import StressTest from "./components/StressTest.jsx";
 import Hero from "./components/Hero.jsx";
 import Logo from "./components/Logo.jsx";
+import { people, getPerson } from "./data/customers.js";
 
 // ✋ YOUR TURN: a temporary "Look" switcher so you can compare designs. Once you pick one,
 // tell me and I'll remove the switcher and make it the default.
 const THEMES = [["daylight", "Daylight"], ["midnight", "Midnight"], ["toyota", "Red"]];
 
 // The name in the top bar opens a small card about the customer.
-function ProfileMenu({ customer, source }) {
+function ProfileMenu({ customer, source, personId, onSwitch }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const initials = customer.name.split(" ").map((w) => w[0]).join("");
@@ -45,6 +45,14 @@ function ProfileMenu({ customer, source }) {
             A <b>made-up customer</b> (not a real person) who stands in for a typical young adult: {money(customer.monthlyNetIncome)}/month
             take-home, a credit card at {customer.accounts.creditCard.apr}% APR, and a Toyota loan at {customer.accounts.autoLoan.apr}%.
           </p>
+          <div className="pop-switch" role="group" aria-label="Switch customer">
+            <div className="pop-switch-title">Switch customer</div>
+            {people.map((p) => (
+              <button key={p.id} aria-pressed={personId === p.id} onClick={() => { onSwitch(p.id); setOpen(false); }}>
+                <b>{p.data.name.split(" ")[0]}</b> <span>{p.tagline}</span>
+              </button>
+            ))}
+          </div>
           <p className="muted small">
             {source === "nessie"
               ? "Accounts, loan, bills and spending are read live from Capital One's Nessie API."
@@ -67,7 +75,7 @@ function useTheme() {
   return [theme, setTheme];
 }
 
-export function Dashboard({ customer, source, theme, setTheme }) {
+export function Dashboard({ customer, source, theme, setTheme, personId, onSwitch }) {
   const [adjustRaw, setAdjust] = useState(DEFAULT_ADJUST);
   const adjust = { ...DEFAULT_ADJUST, ...adjustRaw }; // fills in any missing slider with 0
   const [coachAsk, setCoachAsk] = useState(null); // lets other cards send a question to the coach
@@ -78,7 +86,7 @@ export function Dashboard({ customer, source, theme, setTheme }) {
   const baseline = useMemo(() => runForecast(customer, DEFAULT_ADJUST), []);
   const scenario = useMemo(() => runForecast(customer, adjust), [adjust]);
   const changed = Object.keys(DEFAULT_ADJUST).some((k) => adjust[k] !== DEFAULT_ADJUST[k]);
-  const applied = move.cardFirst && adjust.extraCard === move.extra;
+  const applied = move.apply && Object.entries(move.apply).every(([k, v]) => adjust[k] === v);
 
   // Everything the AI coach is allowed to know, as plain text.
   const context = useMemo(
@@ -99,14 +107,14 @@ export function Dashboard({ customer, source, theme, setTheme }) {
             ))}
           </div>
           <span className={`source ${source}`}>{source === "nessie" ? "● Live: Capital One Nessie" : "● Demo data"}</span>
-          <ProfileMenu customer={customer} source={source} />
+          <ProfileMenu customer={customer} source={source} personId={personId} onSwitch={onSwitch} />
         </div>
       </header>
 
       <main className="container">
         <Hero customer={customer} totals={totals} health={todayHealth} move={move} />
 
-        <NextMoveCard move={move} applied={applied} onTry={() => setAdjust({ ...adjust, extraCard: move.extra })} />
+        <NextMoveCard move={move} applied={applied} onTry={() => setAdjust({ ...adjust, ...move.apply })} />
 
         <div className="grid">
           <AccountsOverview customer={customer} totals={totals} />
@@ -147,24 +155,38 @@ export function Dashboard({ customer, source, theme, setTheme }) {
   );
 }
 
-// Loads the customer from our server (Nessie if switched on, otherwise demo data).
+// Loads the customer from our server (Nessie for Jordan if switched on, otherwise demo data).
 export default function App() {
+  const [personId, setPersonId] = useState("jordan");
   const [data, setData] = useState(null);
   const [theme, setTheme] = useTheme();
 
   useEffect(() => {
-    fetch("/api/customer")
+    let current = true;
+    setData(null);
+    fetch(`/api/customer?id=${personId}`)
       .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData({ source: "demo", customer: demoCustomer }));
-  }, []);
+      .then((d) => current && setData(d))
+      .catch(() => current && setData({ source: "demo", customer: getPerson(personId).data }));
+    return () => { current = false; };
+  }, [personId]);
 
   if (!data)
     return (
       <div className="loading" role="status">
         <div className="spinner" />
-        Loading your accounts…
+        Loading accounts…
       </div>
     );
-  return <Dashboard customer={data.customer} source={data.source} theme={theme} setTheme={setTheme} />;
+  return (
+    <Dashboard
+      key={personId}
+      customer={data.customer}
+      source={data.source}
+      theme={theme}
+      setTheme={setTheme}
+      personId={personId}
+      onSwitch={setPersonId}
+    />
+  );
 }

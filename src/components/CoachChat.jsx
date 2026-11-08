@@ -27,6 +27,7 @@ const planText = (p) =>
     p.transportCut && `cut transport ${p.transportCut}%`,
     p.otherCut && `cut shopping ${p.otherCut}%`,
     p.extraCard && `+${money(p.extraCard)}/mo on the card`,
+    p.extraLoan && `+${money(p.extraLoan)}/mo on the Toyota loan`,
     p.incomeChange && `income ${p.incomeChange > 0 ? "+" : ""}${p.incomeChange}%`,
   ]
     .filter(Boolean)

@@ -3,6 +3,7 @@ import express from "express";
 import { loadCustomerFromNessie } from "./nessie.js";
 import { customer as demoCustomer } from "../src/data/customer.js";
 import { SLIDERS } from "../src/data/simulatorConfig.js";
+import { getPerson } from "../src/data/customers.js";
 
 const app = express();
 app.use(express.json({ limit: "100kb" }));
@@ -21,7 +22,11 @@ app.get("/api/status", (_req, res) => {
 
 // The customer the app shows. Nessie when USE_NESSIE=true, otherwise (or if
 // Nessie is down) the built-in demo customer, so the demo never breaks.
-app.get("/api/customer", async (_req, res) => {
+app.get("/api/customer", async (req, res) => {
+  // Maya and Dev are built-in sample customers. Jordan can come live from Nessie.
+  const id = String(req.query.id || "jordan");
+  if (id !== "jordan") return res.json({ source: "demo", customer: getPerson(id).data });
+
   if (process.env.USE_NESSIE === "true") {
     try {
       return res.json({ source: "nessie", customer: await loadCustomerFromNessie() });
@@ -63,8 +68,8 @@ Answer in plain English in under 120 words. Give one clear recommendation first,
 No jargon, no long lists, no headings. You may use **bold** for key numbers. This is educational guidance, not licensed financial advice.
 
 You reply as JSON: {"reply": "...", "plan": {...} or null}.
-The app has six what-if sliders: diningCut (0-100), groceriesCut (0-40), transportCut (0-40), otherCut (0-100) are percent cuts to that spending line; extraCard (0-1000) is extra dollars per month on the credit card; incomeChange (-30 to 30) is percent.
-When the customer asks what to do, how to reach a goal, or to try something, ALSO include a "plan" that sets those sliders (whole numbers, only what's needed, others 0) and a short "summary" like "Cut dining 25% and add $300/month to the card". Make sure the plan is affordable from their monthly leftover. For plain questions, explanations or small talk, set plan to null.
+The app has seven what-if sliders: diningCut (0-100), groceriesCut (0-40), transportCut (0-40), otherCut (0-100) are percent cuts to that spending line; extraCard (0-1000) is extra dollars per month on the credit card; extraLoan (0-1000) is extra dollars per month on the Toyota auto loan; incomeChange (-30 to 30) is percent.
+Whenever your reply recommends a concrete action the sliders can model (for example an extra monthly payment on the card or the Toyota loan, or cutting a spending line), you MUST also include a "plan" with exactly those numbers, matching the dollar amounts in your reply. Do this when the customer asks what to do, how to reach a goal, or to try something. ALSO include a "plan" that sets those sliders (whole numbers, only what's needed, others 0) and a short "summary" like "Cut dining 25% and add $300/month to the card". Make sure the plan is affordable from their monthly leftover. For plain questions, explanations or small talk, set plan to null.
 
 ${context}`;
 
@@ -98,6 +103,7 @@ ${context}`;
                     transportCut: { type: "INTEGER" },
                     otherCut: { type: "INTEGER" },
                     extraCard: { type: "INTEGER" },
+                    extraLoan: { type: "INTEGER" },
                     incomeChange: { type: "INTEGER" },
                     summary: { type: "STRING" },
                   },

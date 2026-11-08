@@ -29,7 +29,7 @@ export default function StressTest({ customer, onAsk }) {
     <section className="card stress">
       <div className="card-head">
         <h2>Stress test</h2>
-        <span className="muted small">what if your paycheck stopped?</span>
+        <span className="muted small">What if your paycheck stopped?</span>
       </div>
 
       {!ran ? (
