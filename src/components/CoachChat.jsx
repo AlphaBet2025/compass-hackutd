@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { offlineAnswer, offlinePlan } from "../lib/nextMove.js";
 import { money } from "../lib/health.js";
+import { DEFAULT_ADJUST } from "../lib/forecast.js";
 
 // ✋ YOUR TURN: change these starter questions to whatever you want to demo.
 const SUGGESTIONS = [
@@ -20,11 +21,18 @@ function Text({ text }) {
 
 const planText = (p) =>
   p.summary ||
-  [p.diningCut && `cut dining ${p.diningCut}%`, p.extraCard && `+${money(p.extraCard)}/mo on the card`, p.incomeChange && `income ${p.incomeChange > 0 ? "+" : ""}${p.incomeChange}%`]
+  [
+    p.diningCut && `cut dining ${p.diningCut}%`,
+    p.groceriesCut && `cut groceries ${p.groceriesCut}%`,
+    p.transportCut && `cut transport ${p.transportCut}%`,
+    p.otherCut && `cut shopping ${p.otherCut}%`,
+    p.extraCard && `+${money(p.extraCard)}/mo on the card`,
+    p.incomeChange && `income ${p.incomeChange > 0 ? "+" : ""}${p.incomeChange}%`,
+  ]
     .filter(Boolean)
     .join(", ");
 
-const samePlan = (p, a) => p.diningCut === a.diningCut && p.extraCard === a.extraCard && p.incomeChange === a.incomeChange;
+const samePlan = (p, a) => Object.keys(DEFAULT_ADJUST).every((k) => (p[k] || 0) === (a[k] || 0));
 
 export default function CoachChat({ customer, context, adjust, onApplyPlan, externalQuestion }) {
   const [messages, setMessages] = useState([

@@ -63,7 +63,7 @@ Answer in plain English in under 120 words. Give one clear recommendation first,
 No jargon, no long lists, no headings. You may use **bold** for key numbers. This is educational guidance, not licensed financial advice.
 
 You reply as JSON: {"reply": "...", "plan": {...} or null}.
-The app has three what-if sliders: diningCut (0-100, percent of dining spend cut), extraCard (0-1000, extra dollars per month on the credit card), incomeChange (-30 to 30, percent).
+The app has six what-if sliders: diningCut (0-100), groceriesCut (0-40), transportCut (0-40), otherCut (0-100) are percent cuts to that spending line; extraCard (0-1000) is extra dollars per month on the credit card; incomeChange (-30 to 30) is percent.
 When the customer asks what to do, how to reach a goal, or to try something, ALSO include a "plan" that sets those sliders (whole numbers, only what's needed, others 0) and a short "summary" like "Cut dining 25% and add $300/month to the card". Make sure the plan is affordable from their monthly leftover. For plain questions, explanations or small talk, set plan to null.
 
 ${context}`;
@@ -94,6 +94,9 @@ ${context}`;
                   nullable: true,
                   properties: {
                     diningCut: { type: "INTEGER" },
+                    groceriesCut: { type: "INTEGER" },
+                    transportCut: { type: "INTEGER" },
+                    otherCut: { type: "INTEGER" },
                     extraCard: { type: "INTEGER" },
                     incomeChange: { type: "INTEGER" },
                     summary: { type: "STRING" },

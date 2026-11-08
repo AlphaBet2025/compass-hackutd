@@ -4,7 +4,14 @@
 
 import { getHealth } from "./health.js";
 
-export const DEFAULT_ADJUST = { diningCut: 0, extraCard: 0, incomeChange: 0 };
+export const DEFAULT_ADJUST = {
+  diningCut: 0,
+  groceriesCut: 0,
+  transportCut: 0,
+  otherCut: 0,
+  extraCard: 0,
+  incomeChange: 0,
+};
 
 const IRA_GROWTH = 7; // assumed % per year for the Roth IRA (a rough guess)
 const sum = (obj) => Object.values(obj).reduce((a, b) => a + b, 0);
@@ -27,8 +34,12 @@ export function runForecast(c, adj = DEFAULT_ADJUST, months = 12) {
 
   const net = c.monthlyNetIncome * (1 + adj.incomeChange / 100);
   const gross = c.monthlyGrossIncome * (1 + adj.incomeChange / 100);
-  const dining = c.monthlySpending.dining * (1 - adj.diningCut / 100);
-  const spending = sum(c.monthlySpending) - c.monthlySpending.dining + dining;
+  // Each "cut" slider lowers one spending line by that percent.
+  const cut = { dining: adj.diningCut, groceries: adj.groceriesCut, transport: adj.transportCut, other: adj.otherCut };
+  const adjustedSpending = Object.fromEntries(
+    Object.entries(c.monthlySpending).map(([k, v]) => [k, v * (1 - (cut[k] || 0) / 100)])
+  );
+  const spending = sum(adjustedSpending);
 
   const snapshot = (i) => ({
     label: monthLabel(i),
@@ -64,7 +75,7 @@ export function runForecast(c, adj = DEFAULT_ADJUST, months = 12) {
     ...c,
     monthlyNetIncome: net,
     monthlyGrossIncome: gross,
-    monthlySpending: { ...c.monthlySpending, dining },
+    monthlySpending: adjustedSpending,
     accounts: {
       ...a,
       checking: { ...a.checking, balance: Math.max(checking, 0) },

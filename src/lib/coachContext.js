@@ -8,7 +8,7 @@ export function buildCoachContext(c, health, scenario, adjust) {
   const t = getTotals(c);
   const move = getNextMove(c);
   const run = getRunway(c);
-  const changed = adjust.diningCut || adjust.extraCard || adjust.incomeChange;
+  const changed = Object.values(adjust).some((v) => v !== 0);
 
   return `
 CUSTOMER: ${c.name}, age ${c.age}
@@ -40,6 +40,6 @@ COMPASS'S TOYOTA NEXT MOVE: ${move.headline} ${move.why}${move.cardFirst ? ` Sug
 STRESS TEST (if income stopped today): checking+savings ${money(run.liquid)} last ~${run.nowMonths.toFixed(1)} months at current spending, ~${run.leanMonths.toFixed(1)} months on essentials only (rent, groceries, utilities, transport plus debt payments of ${money(a.creditCard.monthlyPayment + a.autoLoan.monthlyPayment)}), ~${run.cdMonths.toFixed(1)} months if the CD is also cashed out (penalty may apply). A safe goal is 6 months; the gap on essentials is ~${money(run.gapToGoal)}.
 
 12-MONTH FORECAST (no changes): net worth ${money(scenario.baselineEnd.netWorth)}, debt ${money(scenario.baselineEnd.debt)}
-${changed ? `USER IS CURRENTLY TRYING A WHAT-IF: cut dining ${adjust.diningCut}%, extra card payment ${money(adjust.extraCard)}/month, income change ${adjust.incomeChange}%. Result: net worth ${money(scenario.end.netWorth)}, debt ${money(scenario.end.debt)}, projected score ${scenario.health.score}.` : "No what-if scenario is active."}
+${changed ? `USER IS CURRENTLY TRYING A WHAT-IF: cut dining ${adjust.diningCut}%, groceries ${adjust.groceriesCut}%, transport ${adjust.transportCut}%, shopping/other ${adjust.otherCut}%, extra card payment ${money(adjust.extraCard)}/month, income change ${adjust.incomeChange}%. Result: net worth ${money(scenario.end.netWorth)}, debt ${money(scenario.end.debt)}, projected score ${scenario.health.score}.` : "No what-if scenario is active."}
 `.trim();
 }

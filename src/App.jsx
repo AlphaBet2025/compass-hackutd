@@ -13,7 +13,8 @@ import CoachChat from "./components/CoachChat.jsx";
 import StressTest from "./components/StressTest.jsx";
 
 function Dashboard({ customer, source }) {
-  const [adjust, setAdjust] = useState(DEFAULT_ADJUST);
+  const [adjustRaw, setAdjust] = useState(DEFAULT_ADJUST);
+  const adjust = { ...DEFAULT_ADJUST, ...adjustRaw }; // fills in any missing slider with 0
   const [coachAsk, setCoachAsk] = useState(null); // lets other cards send a question to the coach
 
   const totals = getTotals(customer);
@@ -80,7 +81,7 @@ function Dashboard({ customer, source }) {
           context={context}
           adjust={adjust}
           onApplyPlan={(p) => {
-            setAdjust({ diningCut: p.diningCut, extraCard: p.extraCard, incomeChange: p.incomeChange });
+            setAdjust(Object.fromEntries(Object.keys(DEFAULT_ADJUST).map((k) => [k, p[k] || 0])));
             document.getElementById("whatif")?.scrollIntoView({ behavior: "smooth", block: "center" });
           }}
         />
