@@ -128,6 +128,7 @@ export function Dashboard({ customer, source, theme, setTheme, personId, onSwitc
             setAdjust={setAdjust}
             surplus={scenario.monthlySurplus}
             overdrawn={scenario.overdrawn}
+            shortfall={scenario.shortfall}
           />
           <ForecastChart points={scenario.points} baseline={baseline} changed={changed} />
         </div>

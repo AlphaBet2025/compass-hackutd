@@ -51,6 +51,8 @@ export function runForecast(c, adj = DEFAULT_ADJUST, months = 12) {
 
   const points = [snapshot(0)];
   let overdrawn = false;
+  let firstShort = null; // first month checking goes below $0
+  let lowest = checking;
 
   for (let m = 1; m <= months; m++) {
     card += (card * a.creditCard.apr) / 1200;
@@ -63,6 +65,8 @@ export function runForecast(c, adj = DEFAULT_ADJUST, months = 12) {
 
     checking += net - spending - cardPay - loanPay;
     if (checking < 0) overdrawn = true;
+    if (checking < lowest) lowest = checking;
+    if (checking < 0 && firstShort === null) firstShort = m;
 
     savings *= 1 + a.savings.apy / 1200;
     cd *= 1 + a.cd.apy / 1200;
@@ -102,5 +106,7 @@ export function runForecast(c, adj = DEFAULT_ADJUST, months = 12) {
     health: getHealth(endCustomer),
     monthlySurplus: net - spending - a.creditCard.monthlyPayment - adj.extraCard - a.autoLoan.monthlyPayment - (adj.extraLoan || 0),
     overdrawn,
+    // When and how far checking goes below zero (null if it never does)
+    shortfall: firstShort === null ? null : { month: firstShort, label: points[firstShort].label, lowest: Math.round(lowest) },
   };
 }

@@ -16,7 +16,7 @@ function valueText(slider, v, customer) {
   return v;
 }
 
-export default function WhatIfSimulator({ customer, adjust, setAdjust, surplus, overdrawn }) {
+export default function WhatIfSimulator({ customer, adjust, setAdjust, surplus, overdrawn, shortfall }) {
   const changed = Object.keys(DEFAULT_ADJUST).some((k) => (adjust[k] ?? 0) !== DEFAULT_ADJUST[k]);
 
   return (
@@ -61,8 +61,13 @@ export default function WhatIfSimulator({ customer, adjust, setAdjust, surplus, 
       </div>
 
       <div className={`surplus ${overdrawn ? "warn" : ""}`}>
-        {overdrawn
-          ? "⚠ Careful: this plan would drain your checking account."
+        {overdrawn && shortfall ? (
+          <>
+            <strong>⚠ This plan overdraws your checking account.</strong> It goes below $0 in <b>{shortfall.label}</b> (month {shortfall.month}) and
+            hits <b>−{money(Math.abs(shortfall.lowest))}</b> at its lowest point.
+            {surplus < 0 && <> You'd spend about <b>{money(Math.abs(surplus))}</b> more than you earn each month. Trim your extra payments or spending by that much to stay positive.</>}
+          </>
+        )
           : `You'd keep about ${money(Math.max(surplus, 0))} each month after bills and debt payments.`}
       </div>
     </section>
