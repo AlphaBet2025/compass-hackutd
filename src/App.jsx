@@ -50,7 +50,7 @@ function Dashboard({ customer, source }) {
 
         <div className="grid">
           <AccountsOverview customer={customer} totals={totals} />
-          <HealthScore health={scenario.health} todayScore={todayHealth.score} />
+          <HealthScore today={todayHealth} projected={scenario.health} />
         </div>
 
         <div className="grid grid-wide">

@@ -113,9 +113,9 @@ body {
 .delta { font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
 .delta.up { background: #e3f6ec; color: var(--good); }
 .delta.down { background: #fde7e6; color: var(--risky); }
-.today-line { text-align: center; margin-bottom: 4px; }
-.today-line .up { color: var(--good); font-weight: 600; }
-.today-line .down { color: var(--risky); font-weight: 600; }
+
+
+
 
 /* Toyota next move */
 .move {
@@ -169,3 +169,21 @@ body {
 .chat-input { display: flex; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; }
 .chat-input input { flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; font: inherit; font-size: 14.5px; outline: none; }
 .chat-input input:focus { border-color: var(--brand); }
+
+/* health: today (big) vs projected (small) */
+.proj-chip { display: flex; justify-content: center; align-items: baseline; gap: 8px; margin: 2px 0 10px; font-size: 14px; }
+.proj-chip b { font-size: 20px; }
+.proj-delta { font-size: 13px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.proj-delta.up { background: #e3f6ec; color: var(--good); }
+.proj-delta.down { background: #fde7e6; color: var(--risky); }
+.legend { display: flex; justify-content: center; gap: 18px; margin-bottom: 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.lg-bar { width: 18px; height: 6px; border-radius: 99px; background: var(--good); display: inline-block; }
+.lg-tick { width: 3px; height: 14px; border-radius: 2px; background: var(--text); display: inline-block; }
+.bar { position: relative; overflow: visible; }
+.bar-fill { position: relative; }
+.bar-tick { position: absolute; top: -4px; width: 3px; height: 16px; border-radius: 2px; background: var(--text); transform: translateX(-50%); transition: left 0.6s ease; }
+.ind-proj { font-size: 12.5px; margin-top: 4px; color: var(--muted); }
+.ind-proj b { color: var(--text); }
+.ind-proj.up b { color: var(--good); }
+.ind-proj.down b { color: var(--risky); }
