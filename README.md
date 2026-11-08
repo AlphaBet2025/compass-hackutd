@@ -93,6 +93,7 @@ Browser (React + Vite)  ──►  Express server  ──►  Gemini API
 - **Keys stay on the server.** The browser never sees a Gemini or Nessie key. `.env` is git-ignored.
 - **Nessie mapping.** Each customer's Checking, Savings and Credit Card come from their Nessie accounts. The auto loan comes from `/loans`. Rent, utilities and subscriptions come from `/bills`. Everyday spending comes from `/accounts/{id}/transactions`, grouped by merchant category over the last 30 days. The CD and IRA are Savings accounts with descriptive nicknames, since Nessie has no such account types. Nessie has no rate fields, so APR and APY are read from the account and loan nicknames. Income and age come from a local profile. Responses are cached for 60 seconds to stay under the rate limit.
 - **Grounded AI.** Each coach request includes a text summary of the customer's accounts, spending by merchant, health indicators, next-move recommendation, stress test and any active what-if scenario. The model is told to use only those numbers. Any plan it proposes is snapped to the real slider ranges on the server before it reaches the page.
+- **Built not to get stuck.** If Gemini takes longer than 10 seconds, the coach shows an offline answer from the same numbers. If Nessie or the server is slow, the app loads built-in demo data instead of waiting.
 - **Honest numbers.** The interest saved is calculated month by month and covers the **life of the debt** (for example 31 months versus 6), not just the next 12 months.
 
 ### Project layout

@@ -49,11 +49,11 @@ export default function ForecastChart({ points, baseline, changed }) {
             <Tooltip formatter={(v) => money(v)} contentStyle={{ borderRadius: 10, border: "1px solid var(--line)", background: "var(--card)", color: "var(--text)" }} />
             <Legend iconType="plainline" wrapperStyle={{ fontSize: 13 }} />
             {changed && (
-              <Line name="Net worth (no changes)" dataKey="baselineNetWorth" stroke={COLORS.baseline} strokeDasharray="5 4" strokeWidth={2} dot={false} />
+              <Line name="Net worth (no changes)" dataKey="baselineNetWorth" stroke={COLORS.baseline} strokeDasharray="5 4" strokeWidth={2} dot={false} isAnimationActive={false} />
             )}
-            <Line name="Net worth" dataKey="netWorth" stroke={COLORS.netWorth} strokeWidth={3} dot={false} />
-            <Line name="Cash & savings" dataKey="cash" stroke={COLORS.cash} strokeWidth={2.5} dot={false} />
-            <Line name="Total debt" dataKey="debt" stroke={COLORS.debt} strokeWidth={2.5} dot={false} />
+            <Line name="Net worth" dataKey="netWorth" stroke={COLORS.netWorth} strokeWidth={3} dot={false} isAnimationActive={false} />
+            <Line name="Cash & savings" dataKey="cash" stroke={COLORS.cash} strokeWidth={2.5} dot={false} isAnimationActive={false} />
+            <Line name="Total debt" dataKey="debt" stroke={COLORS.debt} strokeWidth={2.5} dot={false} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
