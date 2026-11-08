@@ -26,7 +26,7 @@ const planText = (p) =>
 
 const samePlan = (p, a) => p.diningCut === a.diningCut && p.extraCard === a.extraCard && p.incomeChange === a.incomeChange;
 
-export default function CoachChat({ customer, context, adjust, onApplyPlan }) {
+export default function CoachChat({ customer, context, adjust, onApplyPlan, externalQuestion }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -40,6 +40,12 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan }) {
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy]);
+
+  // Another card (like the stress test) can send the coach a question.
+  useEffect(() => {
+    if (externalQuestion) send(externalQuestion.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalQuestion?.id]);
 
   async function send(text) {
     const question = text.trim();
@@ -71,7 +77,7 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan }) {
   }
 
   return (
-    <section className="card coach">
+    <section className="card coach" id="coach">
       <div className="card-head">
         <h2>Ask your coach</h2>
         <span className="muted small">Powered by Gemini · reads your real numbers</span>

@@ -10,9 +10,11 @@ import ForecastChart from "./components/ForecastChart.jsx";
 import WhatIfSimulator from "./components/WhatIfSimulator.jsx";
 import NextMoveCard from "./components/NextMoveCard.jsx";
 import CoachChat from "./components/CoachChat.jsx";
+import StressTest from "./components/StressTest.jsx";
 
 function Dashboard({ customer, source }) {
   const [adjust, setAdjust] = useState(DEFAULT_ADJUST);
+  const [coachAsk, setCoachAsk] = useState(null); // lets other cards send a question to the coach
 
   const totals = getTotals(customer);
   const todayHealth = getHealth(customer);
@@ -64,7 +66,16 @@ function Dashboard({ customer, source }) {
           <ForecastChart points={scenario.points} baseline={baseline} changed={changed} />
         </div>
 
+        <StressTest
+          customer={customer}
+          onAsk={(text) => {
+            setCoachAsk({ id: Date.now(), text });
+            document.getElementById("coach")?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+        />
+
         <CoachChat
+          externalQuestion={coachAsk}
           customer={customer}
           context={context}
           adjust={adjust}

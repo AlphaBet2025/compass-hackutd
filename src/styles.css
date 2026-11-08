@@ -193,3 +193,18 @@ body {
 .plan-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--brand); }
 .plan-text { font-weight: 600; margin: 4px 0 10px; }
 .plan .btn { padding: 8px 14px; }
+
+/* stress test */
+.stress { margin-top: 20px; }
+.stress-intro { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.stress-intro p { margin: 0; max-width: 620px; line-height: 1.5; }
+.stress-headline { font-size: 20px; margin-bottom: 18px; letter-spacing: -0.3px; }
+.stress-headline b.good, .stress-months.good { color: var(--good); }
+.stress-headline b.ok, .stress-months.ok { color: #a87100; }
+.stress-headline b.risky, .stress-months.risky { color: var(--risky); }
+.stress-row { margin-bottom: 16px; }
+.stress-row-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 8px; }
+.stress-label { font-weight: 600; }
+.stress-months { font-size: 22px; font-weight: 700; white-space: nowrap; }
+.stress-months span { font-size: 13px; font-weight: 500; color: var(--muted); }
+.stress-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 14px 16px; margin: 6px 0 10px; border-radius: 12px; background: #f1f5ff; color: var(--brand-dark); font-size: 14.5px; line-height: 1.45; }
