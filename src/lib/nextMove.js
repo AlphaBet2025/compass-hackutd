@@ -42,6 +42,7 @@ export function getNextMove(c) {
       spread,
       extra,
       payoffMonths: fast.months,
+      slowMonths: slow.months,
       interestSaved,
       headline: `Pay your credit card first, not your Toyota.`,
       why: `Your card costs ${card.apr}% a year, almost ${(card.apr / loan.apr).toFixed(0)}× your ${loan.apr}% car loan. Every extra dollar on the card saves far more than the same dollar on the car.`,
@@ -77,7 +78,7 @@ export function offlineAnswer(question, c, adjust) {
 
   if (/card|car|loan|toyota|first|pay off|debt/.test(q)) {
     return move.cardFirst
-      ? `Pay the credit card first. It charges ${move.cardApr}% a year versus ${move.loanApr}% on your Toyota loan. Adding ${money(move.extra)} a month clears the card in about ${move.payoffMonths} months${move.interestSaved ? " and saves roughly " + money(move.interestSaved) + " in interest" : ""}. Keep making the normal ${money(a.autoLoan.monthlyPayment)} Toyota payment meanwhile.`
+      ? `Pay the credit card first. It charges ${move.cardApr}% a year versus ${move.loanApr}% on your Toyota loan. Adding ${money(move.extra)} a month clears the card in about ${move.payoffMonths} months${move.interestSaved ? " and saves roughly " + money(move.interestSaved) + " in total interest (vs. " + move.slowMonths + " months at your usual payment)" : ""}. Keep making the normal ${money(a.autoLoan.monthlyPayment)} Toyota payment meanwhile.`
       : `Your debts cost about the same, so put extra toward the Toyota loan.`;
   }
   if (/score|health|how am i|doing/.test(q)) {

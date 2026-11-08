@@ -28,7 +28,12 @@ export default function WhatIfSimulator({ customer, adjust, setAdjust, surplus, 
           </button>
         )}
       </div>
-      <p className="muted small tight">Drag a slider. The forecast and health score update instantly.</p>
+      <p className="muted small tight">
+        Drag a slider. The forecast and health score update instantly.
+        {customer.spendingSource === "nessie" && (
+          <> Dining spend ({money(customer.monthlySpending.dining)}/mo) is from your last 30 days of Capital One transactions.</>
+        )}
+      </p>
 
       <div className="sliders">
         {SLIDERS.map((s) => (

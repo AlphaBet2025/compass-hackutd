@@ -22,12 +22,18 @@ ACCOUNTS
 - Toyota auto loan (${a.autoLoan.vehicle}): owes ${money(a.autoLoan.balance)}, ${a.autoLoan.apr}% APR, pays ${money(a.autoLoan.monthlyPayment)}/month
 
 MONTHLY SPENDING (excluding debt payments)
-${Object.entries(c.monthlySpending).map(([k, v]) => `- ${k}: ${money(v)}`).join("\n")}
+${Object.entries(c.monthlySpending)
+  .map(([k, v]) => {
+    const top = c.spendingBreakdown?.[k];
+    return `- ${k}: ${money(v)}${top ? ` (biggest: ${top.map((m) => `${m.name} ${money(m.amount)}`).join(", ")})` : ""}`;
+  })
+  .join("\n")}
+${c.spendingSource === "nessie" ? `(Everyday spending comes from ${c.spendingTransactions} real transactions in the last 30 days; rent, utilities and subscriptions come from recurring bills.)` : ""}
 
 FINANCIAL HEALTH SCORE TODAY: ${health.score}/100 (${health.label})
 ${health.indicators.map((i) => `- ${i.label}: ${i.display} (${i.score}/100, ${i.target})`).join("\n")}
 
-COMPASS'S TOYOTA NEXT MOVE: ${move.headline} ${move.why}${move.cardFirst ? ` Suggested: extra ${money(move.extra)}/month on the card, paid off in ~${move.payoffMonths} months, saving ~${money(move.interestSaved ?? 0)} interest.` : ""}
+COMPASS'S TOYOTA NEXT MOVE: ${move.headline} ${move.why}${move.cardFirst ? ` Suggested: extra ${money(move.extra)}/month on the card, paid off in ~${move.payoffMonths} months, saving ~${money(move.interestSaved ?? 0)} in total interest over the life of the debt (paying the usual ${money(a.creditCard.monthlyPayment)}/month would take ${move.slowMonths} months). The ${money(a.creditCard.monthlyPayment)} is the customer's usual payment, not a bank-required minimum.` : ""}
 
 12-MONTH FORECAST (no changes): net worth ${money(scenario.baselineEnd.netWorth)}, debt ${money(scenario.baselineEnd.debt)}
 ${changed ? `USER IS CURRENTLY TRYING A WHAT-IF: cut dining ${adjust.diningCut}%, extra card payment ${money(adjust.extraCard)}/month, income change ${adjust.incomeChange}%. Result: net worth ${money(scenario.end.netWorth)}, debt ${money(scenario.end.debt)}, projected score ${scenario.health.score}.` : "No what-if scenario is active."}

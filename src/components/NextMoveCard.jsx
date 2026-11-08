@@ -21,7 +21,7 @@ export default function NextMoveCard({ move, onTry, applied }) {
               {applied ? "✓ Applied in the simulator below" : `Try ${money(move.extra)}/mo in the simulator`}
             </button>
             {move.interestSaved ? (
-              <span className="move-save">Saves about <b>{money(move.interestSaved)}</b> in interest</span>
+              <span className="move-save">Saves about <b>{money(move.interestSaved)}</b> in total interest and clears the card <b>{move.slowMonths - move.payoffMonths} months sooner</b></span>
             ) : null}
           </div>
         )}
