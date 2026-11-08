@@ -376,3 +376,8 @@ body {
 .flow-row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 14px; font-variant-numeric: tabular-nums; }
 .flow-row.total { margin-top: 6px; padding-top: 9px; border-top: 1px solid var(--line); font-weight: 700; }
 .flow-row.total b { color: var(--good); }
+
+/* spending card icons */
+.spend-row { display: flex; align-items: center; gap: 14px; }
+.spend-main { flex: 1; min-width: 0; }
+.spend-list { gap: 12px; }

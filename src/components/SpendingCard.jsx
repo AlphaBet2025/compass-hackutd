@@ -1,11 +1,12 @@
 import { money } from "../lib/health.js";
 
 // Everyday spending lines, matched to the slider that cuts each one.
+// ✋ YOUR TURN: swap any emoji for one you like.
 const LINES = [
-  { key: "groceries", label: "Groceries", cut: "groceriesCut" },
-  { key: "dining", label: "Dining out", cut: "diningCut" },
-  { key: "transport", label: "Transport", cut: "transportCut" },
-  { key: "other", label: "Shopping & other", cut: "otherCut" },
+  { key: "groceries", label: "Groceries", icon: "🛒", cut: "groceriesCut" },
+  { key: "dining", label: "Dining out", icon: "🍽️", cut: "diningCut" },
+  { key: "transport", label: "Transport", icon: "🚗", cut: "transportCut" },
+  { key: "other", label: "Shopping & other", icon: "🛍️", cut: "otherCut" },
 ];
 
 // "Where your money goes": last 30 days of spending. Drag a "cut" slider and the
@@ -33,27 +34,30 @@ export default function SpendingCard({ customer, adjust }) {
 
       <ul className="spend-list">
         {rows.map((r) => (
-          <li key={r.key}>
-            <div className="spend-top">
-              <span className="spend-label">
-                {r.label}
-                {r.top && <span className="muted small"> · mostly {r.top}</span>}
-              </span>
-              <span className="spend-amt">
-                {money(r.after)}
-                {r.saved > 0 && <span className="spend-saved"> −{money(r.saved)}</span>}
-              </span>
-            </div>
-            <div className="spend-bar" role="img" aria-label={`${r.label}: ${money(r.after)} a month`}>
-              <div className="spend-fill" style={{ width: `${(r.after / max) * 100}%` }} />
-              {r.saved > 0 && <div className="spend-cut" style={{ width: `${(r.saved / max) * 100}%` }} />}
+          <li key={r.key} className="spend-row">
+            <span className="acct-icon" aria-hidden="true">{r.icon}</span>
+            <div className="spend-main">
+              <div className="spend-top">
+                <span className="spend-label">
+                  {r.label}
+                  {r.top && <span className="muted small"> · mostly {r.top}</span>}
+                </span>
+                <span className="spend-amt">
+                  {money(r.after)}
+                  {r.saved > 0 && <span className="spend-saved"> −{money(r.saved)}</span>}
+                </span>
+              </div>
+              <div className="spend-bar" role="img" aria-label={`${r.label}: ${money(r.after)} a month`}>
+                <div className="spend-fill" style={{ width: `${(r.after / max) * 100}%` }} />
+                {r.saved > 0 && <div className="spend-cut" style={{ width: `${(r.saved / max) * 100}%` }} />}
+              </div>
             </div>
           </li>
         ))}
       </ul>
 
       <div className="spend-foot">
-        <span>Fixed bills (rent, utilities, subscriptions)</span>
+        <span><span aria-hidden="true">🏠 </span>Fixed bills (rent, utilities, subscriptions)</span>
         <b>{money(fixed)}</b>
       </div>
       <div className="muted small spend-note">
