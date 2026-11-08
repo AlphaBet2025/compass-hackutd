@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { customer as demoCustomer } from "./data/customer.js";
-import { getTotals, getHealth } from "./lib/health.js";
+import { getTotals, getHealth, money } from "./lib/health.js";
 import { runForecast, DEFAULT_ADJUST } from "./lib/forecast.js";
 import { getNextMove } from "./lib/nextMove.js";
 import { buildCoachContext } from "./lib/coachContext.js";
@@ -11,8 +11,63 @@ import WhatIfSimulator from "./components/WhatIfSimulator.jsx";
 import NextMoveCard from "./components/NextMoveCard.jsx";
 import CoachChat from "./components/CoachChat.jsx";
 import StressTest from "./components/StressTest.jsx";
+import Hero from "./components/Hero.jsx";
+import Logo from "./components/Logo.jsx";
 
-function Dashboard({ customer, source }) {
+// ✋ YOUR TURN: a temporary "Look" switcher so you can compare designs. Once you pick one,
+// tell me and I'll remove the switcher and make it the default.
+const THEMES = [["daylight", "Daylight"], ["midnight", "Midnight"], ["toyota", "Red"]];
+
+// The name in the top bar opens a small card about the customer.
+function ProfileMenu({ customer, source }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const initials = customer.name.split(" ").map((w) => w[0]).join("");
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => { if (e.type === "keydown" ? e.key === "Escape" : !ref.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", close); };
+  }, [open]);
+
+  return (
+    <div className="profile" ref={ref}>
+      <button className="who-btn" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <span className="avatar">{initials}</span> {customer.name} <span aria-hidden="true">▾</span>
+      </button>
+      {open && (
+        <div className="popover" role="dialog" aria-label="About this customer">
+          <div className="pop-name">{customer.name}, {customer.age}</div>
+          {/* ✋ YOUR TURN: write Jordan's story here in your own words. */}
+          <p>
+            A <b>made-up customer</b> (not a real person) who stands in for a typical young adult: {money(customer.monthlyNetIncome)}/month
+            take-home, a credit card at {customer.accounts.creditCard.apr}% APR, and a Toyota loan at {customer.accounts.autoLoan.apr}%.
+          </p>
+          <p className="muted small">
+            {source === "nessie"
+              ? "Accounts, loan, bills and spending are read live from Capital One's Nessie API."
+              : "Showing built-in demo data (Nessie is switched off or unavailable)."}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function useTheme() {
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem("compass-theme") || "daylight"; } catch { return "daylight"; }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem("compass-theme", theme); } catch { /* fine without it */ }
+  }, [theme]);
+  return [theme, setTheme];
+}
+
+export function Dashboard({ customer, source, theme, setTheme }) {
   const [adjustRaw, setAdjust] = useState(DEFAULT_ADJUST);
   const adjust = { ...DEFAULT_ADJUST, ...adjustRaw }; // fills in any missing slider with 0
   const [coachAsk, setCoachAsk] = useState(null); // lets other cards send a question to the coach
@@ -35,19 +90,21 @@ function Dashboard({ customer, source }) {
     <div className="app">
       <header className="topbar">
         <div className="brand">
-          <span className="logo">◎</span> Compass
+          <Logo /> Compass
         </div>
         <div className="who">
+          <div className="looks" role="group" aria-label="Choose a look">
+            {THEMES.map(([id, label]) => (
+              <button key={id} aria-pressed={theme === id} onClick={() => setTheme(id)}>{label}</button>
+            ))}
+          </div>
           <span className={`source ${source}`}>{source === "nessie" ? "● Live: Capital One Nessie" : "● Demo data"}</span>
-          <span className="avatar">JR</span> {customer.name}
+          <ProfileMenu customer={customer} source={source} />
         </div>
       </header>
 
       <main className="container">
-        <div className="hello">
-          <h1>Good to see you, {customer.name.split(" ")[0]}.</h1>
-          <p>Here's all your money in one place, and what to do next.</p>
-        </div>
+        <Hero customer={customer} totals={totals} health={todayHealth} move={move} />
 
         <NextMoveCard move={move} applied={applied} onTry={() => setAdjust({ ...adjust, extraCard: move.extra })} />
 
@@ -93,6 +150,7 @@ function Dashboard({ customer, source }) {
 // Loads the customer from our server (Nessie if switched on, otherwise demo data).
 export default function App() {
   const [data, setData] = useState(null);
+  const [theme, setTheme] = useTheme();
 
   useEffect(() => {
     fetch("/api/customer")
@@ -101,6 +159,12 @@ export default function App() {
       .catch(() => setData({ source: "demo", customer: demoCustomer }));
   }, []);
 
-  if (!data) return <div className="loading">Loading your accounts…</div>;
-  return <Dashboard customer={data.customer} source={data.source} />;
+  if (!data)
+    return (
+      <div className="loading" role="status">
+        <div className="spinner" />
+        Loading your accounts…
+      </div>
+    );
+  return <Dashboard customer={data.customer} source={data.source} theme={theme} setTheme={setTheme} />;
 }

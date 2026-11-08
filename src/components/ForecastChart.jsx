@@ -3,10 +3,10 @@ import { money } from "../lib/health.js";
 
 // ✋ YOUR TURN: pick your own chart colors here.
 const COLORS = {
-  cash: "#14a05b", // checking + savings + CD
-  debt: "#e0443e", // card + car loan
-  netWorth: "#2557f6",
-  baseline: "#9aa5b8",
+  cash: "var(--good)", // checking + savings + CD
+  debt: "var(--risky)", // card + car loan
+  netWorth: "var(--brand)",
+  baseline: "var(--muted)",
 };
 
 const k = (n) => (Math.abs(n) >= 1000 ? `$${Math.round(n / 1000)}k` : `$${n}`);
@@ -43,10 +43,10 @@ export default function ForecastChart({ points, baseline, changed }) {
       <div className="chart">
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-            <CartesianGrid stroke="#e6eaf2" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#6b778c" }} tickLine={false} axisLine={{ stroke: "#e6eaf2" }} />
-            <YAxis tickFormatter={k} tick={{ fontSize: 12, fill: "#6b778c" }} tickLine={false} axisLine={false} width={48} />
-            <Tooltip formatter={(v) => money(v)} contentStyle={{ borderRadius: 10, border: "1px solid #e6eaf2" }} />
+            <CartesianGrid stroke="var(--line)" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 12, fill: "var(--muted)" }} tickLine={false} axisLine={{ stroke: "var(--line)" }} />
+            <YAxis tickFormatter={k} tick={{ fontSize: 12, fill: "var(--muted)" }} tickLine={false} axisLine={false} width={48} />
+            <Tooltip formatter={(v) => money(v)} contentStyle={{ borderRadius: 10, border: "1px solid var(--line)", background: "var(--card)", color: "var(--text)" }} />
             <Legend iconType="plainline" wrapperStyle={{ fontSize: 13 }} />
             {changed && (
               <Line name="Net worth (no changes)" dataKey="baselineNetWorth" stroke={COLORS.baseline} strokeDasharray="5 4" strokeWidth={2} dot={false} />

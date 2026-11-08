@@ -91,7 +91,7 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan, exte
         <span className="muted small">Powered by Gemini · reads your real numbers</span>
       </div>
 
-      <div className="chat" ref={listRef}>
+      <div className="chat" ref={listRef} role="log" aria-live="polite" aria-label="Conversation with your coach">
         {messages.map((m, i) => (
           <div key={i} className={`msg ${m.role}`}>
             <div className="bubble">
@@ -125,7 +125,7 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan, exte
       )}
 
       <form className="chat-input" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about your money…" />
+        <input aria-label="Ask your coach a question" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about your money…" />
         <button className="btn" disabled={busy || !input.trim()}>Send</button>
       </form>
     </section>

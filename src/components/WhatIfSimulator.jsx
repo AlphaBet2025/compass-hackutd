@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { SLIDERS } from "../data/simulatorConfig.js";
 import { DEFAULT_ADJUST } from "../lib/forecast.js";
 import { money } from "../lib/health.js";
@@ -34,8 +35,12 @@ export default function WhatIfSimulator({ customer, adjust, setAdjust, surplus, 
       </p>
 
       <div className="sliders">
-        {SLIDERS.map((s) => (
-          <label key={s.key} className="slider">
+        {SLIDERS.map((s, i) => (
+          <Fragment key={s.key}>
+            {(i === 0 || (!s.spendKey && SLIDERS[i - 1].spendKey)) && (
+              <div className="slider-group">{s.spendKey ? "Spending" : "Debt & income"}</div>
+            )}
+          <label className="slider">
             <div className="slider-top">
               <span className="slider-label">{s.label}</span>
               <span className="slider-val">{valueText(s, adjust[s.key] ?? 0, customer)}</span>
@@ -46,10 +51,12 @@ export default function WhatIfSimulator({ customer, adjust, setAdjust, surplus, 
               max={s.max}
               step={s.step}
               value={adjust[s.key] ?? 0}
+              aria-valuetext={String(valueText(s, adjust[s.key] ?? 0, customer))}
               onChange={(e) => setAdjust({ ...adjust, [s.key]: Number(e.target.value) })}
             />
             <div className="muted small">{s.hint}</div>
           </label>
+          </Fragment>
         ))}
       </div>
 
