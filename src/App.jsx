@@ -234,6 +234,7 @@ export function Dashboard({ customer, source, theme, setTheme, personId, onSwitc
           greeting={
             <div className="hub-greet">
               <h1>Good to see you, {first}.</h1>
+              <p className="tagline">Compass is an AI co-pilot for your money. It reads your accounts and tells you the one thing to do next.</p>
               <p className="insight">
                 <strong>Your biggest opportunity:</strong> <Bold text={move.insight} />
               </p>
@@ -291,6 +292,9 @@ export function Dashboard({ customer, source, theme, setTheme, personId, onSwitc
           {coach}
         </main>
       )}
+      <footer className="disclaimer">
+        Sample data from Capital One's Nessie sandbox. Educational guidance, not financial advice.
+      </footer>
     </div>
   );
 }

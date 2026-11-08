@@ -17,6 +17,7 @@ export default function Hero({ customer, totals, health, move }) {
   return (
     <section className="hero" aria-labelledby="hello">
       <h1 id="hello">Good to see you, {first}.</h1>
+      <p className="tagline">Compass is an AI co-pilot for your money. It reads your accounts and tells you the one thing to do next.</p>
 
       {/* ✋ YOUR TURN: this sentence is the first thing a judge reads. Put it in your own words. */}
       <p className="insight">
