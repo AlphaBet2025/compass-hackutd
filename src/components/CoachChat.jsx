@@ -64,10 +64,15 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan, exte
     setInput("");
     setBusy(true);
 
+    // If the AI is slow (bad Wi-Fi, busy API), stop waiting after 10 seconds and answer offline.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+
     try {
       // Skip the greeting: Gemini wants the conversation to start with the user.
       const res = await fetch("/api/chat", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next.filter((m, i) => i > 0 && !m.offline), context }),
       });
@@ -81,6 +86,7 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan, exte
         { role: "assistant", offline: true, text: offlineAnswer(question, customer, adjust), plan: offlinePlan(question, customer) },
       ]);
     } finally {
+      clearTimeout(timer);
       setBusy(false);
     }
   }
@@ -106,7 +112,7 @@ export default function CoachChat({ customer, context, adjust, onApplyPlan, exte
                   </button>
                 </div>
               )}
-              {m.offline && <div className="offline-note">Quick answer (AI is offline right now)</div>}
+              {m.offline && <div className="offline-note">Quick answer (the AI is unavailable right now)</div>}
             </div>
           </div>
         ))}

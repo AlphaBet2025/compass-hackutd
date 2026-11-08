@@ -27,7 +27,8 @@ app.get("/api/customer", async (req, res) => {
 
   if (process.env.USE_NESSIE === "true") {
     try {
-      return res.json({ source: "nessie", customer: await loadCustomerFromNessie(id) });
+      const slow = new Promise((_, reject) => setTimeout(() => reject(new Error("Nessie took too long")), 7000));
+      return res.json({ source: "nessie", customer: await Promise.race([loadCustomerFromNessie(id), slow]) });
     } catch (err) {
       console.error("Nessie failed, using demo data:", err.message);
       return res.json({ source: "demo", reason: "nessie_unavailable", customer: getPerson(id).data });
@@ -111,7 +112,7 @@ ${context}`;
             },
           },
         }),
-        signal: AbortSignal.timeout(25000),
+        signal: AbortSignal.timeout(11000), // the page gives up at 10s and shows its offline answer
       }
     );
     const data = await r.json();

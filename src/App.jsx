@@ -168,11 +168,15 @@ export default function App() {
   useEffect(() => {
     let current = true;
     setData(null);
-    fetch(`/api/customer?id=${personId}`)
+    // If the server is slow, show the built-in demo data after 10 seconds instead of spinning forever.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    fetch(`/api/customer?id=${personId}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => current && setData(d))
-      .catch(() => current && setData({ source: "demo", customer: getPerson(personId).data }));
-    return () => { current = false; };
+      .catch(() => current && setData({ source: "demo", customer: getPerson(personId).data }))
+      .finally(() => clearTimeout(timer));
+    return () => { current = false; clearTimeout(timer); controller.abort(); };
   }, [personId]);
 
   if (!data)
