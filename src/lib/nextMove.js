@@ -92,3 +92,16 @@ export function offlineAnswer(question, c, adjust) {
   }
   return `Here's the big picture: your health score is ${health.score}/100, and your best next move is: ${move.headline} Ask me about your card, your Toyota loan, or your savings.`;
 }
+
+// Offline version of the coach's "Apply this plan" button.
+export function offlinePlan(question, c) {
+  const q = question.toLowerCase();
+  const move = getNextMove(c);
+  if (/card|car|loan|toyota|first|pay off|debt|faster/.test(q) && move.cardFirst) {
+    return { diningCut: 0, extraCard: move.extra, incomeChange: 0, summary: `Add ${money(move.extra)}/month to the credit card` };
+  }
+  if (/dining|eat|spend|cut|save|saving|emergency/.test(q)) {
+    return { diningCut: 50, extraCard: 0, incomeChange: 0, summary: "Cut dining out by 50%" };
+  }
+  return null;
+}

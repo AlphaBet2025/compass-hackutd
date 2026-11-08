@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { loadCustomerFromNessie } from "./nessie.js";
 import { customer as demoCustomer } from "../src/data/customer.js";
+import { SLIDERS } from "../src/data/simulatorConfig.js";
 
 const app = express();
 app.use(express.json({ limit: "100kb" }));
@@ -32,6 +33,19 @@ app.get("/api/customer", async (_req, res) => {
   res.json({ source: "demo", customer: demoCustomer });
 });
 
+// Never trust the model's numbers: snap them to the real slider ranges and steps.
+function cleanPlan(p) {
+  if (!p || typeof p !== "object") return null;
+  const out = {};
+  for (const sl of SLIDERS) {
+    const n = Number(p[sl.key]) || 0;
+    out[sl.key] = Math.min(sl.max, Math.max(sl.min, Math.round(n / sl.step) * sl.step));
+  }
+  if (!SLIDERS.some((sl) => out[sl.key] !== 0)) return null;
+  out.summary = String(p.summary || "").slice(0, 120);
+  return out;
+}
+
 // AI coach. The browser sends the chat + a text summary of the customer's numbers.
 // The secret key stays here on the server and never reaches the browser.
 app.post("/api/chat", async (req, res) => {
@@ -47,6 +61,10 @@ app.post("/api/chat", async (req, res) => {
 Use ONLY the customer's real numbers below. Never invent balances, rates, or products.
 Answer in plain English in under 120 words. Give one clear recommendation first, then the why with specific numbers.
 No jargon, no long lists, no headings. You may use **bold** for key numbers. This is educational guidance, not licensed financial advice.
+
+You reply as JSON: {"reply": "...", "plan": {...} or null}.
+The app has three what-if sliders: diningCut (0-100, percent of dining spend cut), extraCard (0-1000, extra dollars per month on the credit card), incomeChange (-30 to 30, percent).
+When the customer asks what to do, how to reach a goal, or to try something, ALSO include a "plan" that sets those sliders (whole numbers, only what's needed, others 0) and a short "summary" like "Cut dining 25% and add $300/month to the card". Make sure the plan is affordable from their monthly leftover. For plain questions, explanations or small talk, set plan to null.
 
 ${context}`;
 
@@ -64,7 +82,27 @@ ${context}`;
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
-          generationConfig: { temperature: 0.6 },
+          generationConfig: {
+            temperature: 0.6,
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                reply: { type: "STRING" },
+                plan: {
+                  type: "OBJECT",
+                  nullable: true,
+                  properties: {
+                    diningCut: { type: "INTEGER" },
+                    extraCard: { type: "INTEGER" },
+                    incomeChange: { type: "INTEGER" },
+                    summary: { type: "STRING" },
+                  },
+                },
+              },
+              required: ["reply"],
+            },
+          },
         }),
         signal: AbortSignal.timeout(25000),
       }
@@ -74,9 +112,20 @@ ${context}`;
       console.error("Gemini error:", r.status, data?.error?.message);
       return res.status(502).json({ error: "gemini_failed" });
     }
-    const reply = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("").trim();
+    const raw = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("").trim();
+    if (!raw) return res.status(502).json({ error: "empty_reply" });
+
+    let reply = raw;
+    let plan = null;
+    try {
+      const parsed = JSON.parse(raw);
+      reply = String(parsed.reply || "").trim();
+      plan = cleanPlan(parsed.plan);
+    } catch {
+      /* the model sent plain text, so just show it */
+    }
     if (!reply) return res.status(502).json({ error: "empty_reply" });
-    res.json({ reply });
+    res.json({ reply, plan });
   } catch (err) {
     console.error("Gemini request failed:", err.message);
     res.status(502).json({ error: "gemini_unreachable" });

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { offlineAnswer } from "../lib/nextMove.js";
+import { offlineAnswer, offlinePlan } from "../lib/nextMove.js";
+import { money } from "../lib/health.js";
 
 // ✋ YOUR TURN: change these starter questions to whatever you want to demo.
 const SUGGESTIONS = [
@@ -17,7 +18,15 @@ function Text({ text }) {
   );
 }
 
-export default function CoachChat({ customer, context, adjust }) {
+const planText = (p) =>
+  p.summary ||
+  [p.diningCut && `cut dining ${p.diningCut}%`, p.extraCard && `+${money(p.extraCard)}/mo on the card`, p.incomeChange && `income ${p.incomeChange > 0 ? "+" : ""}${p.incomeChange}%`]
+    .filter(Boolean)
+    .join(", ");
+
+const samePlan = (p, a) => p.diningCut === a.diningCut && p.extraCard === a.extraCard && p.incomeChange === a.incomeChange;
+
+export default function CoachChat({ customer, context, adjust, onApplyPlan }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -49,10 +58,13 @@ export default function CoachChat({ customer, context, adjust }) {
       });
       const data = await res.json();
       if (!res.ok || !data.reply) throw new Error(data.error || "failed");
-      setMessages([...next, { role: "assistant", text: data.reply }]);
+      setMessages([...next, { role: "assistant", text: data.reply, plan: data.plan || null }]);
     } catch {
       // Friendly fallback: answer from the same numbers without the AI.
-      setMessages([...next, { role: "assistant", offline: true, text: offlineAnswer(question, customer, adjust) }]);
+      setMessages([
+        ...next,
+        { role: "assistant", offline: true, text: offlineAnswer(question, customer, adjust), plan: offlinePlan(question, customer) },
+      ]);
     } finally {
       setBusy(false);
     }
@@ -70,6 +82,15 @@ export default function CoachChat({ customer, context, adjust }) {
           <div key={i} className={`msg ${m.role}`}>
             <div className="bubble">
               <Text text={m.text} />
+              {m.plan && (
+                <div className="plan">
+                  <div className="plan-label">Suggested plan</div>
+                  <div className="plan-text">{planText(m.plan)}</div>
+                  <button className="btn" disabled={samePlan(m.plan, adjust)} onClick={() => onApplyPlan(m.plan)}>
+                    {samePlan(m.plan, adjust) ? "✓ Applied. See the forecast above" : "Apply this plan"}
+                  </button>
+                </div>
+              )}
               {m.offline && <div className="offline-note">Quick answer (AI is offline right now)</div>}
             </div>
           </div>

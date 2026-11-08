@@ -53,7 +53,7 @@ function Dashboard({ customer, source }) {
           <HealthScore today={todayHealth} projected={scenario.health} />
         </div>
 
-        <div className="grid grid-wide">
+        <div className="grid grid-wide" id="whatif">
           <WhatIfSimulator
             customer={customer}
             adjust={adjust}
@@ -64,7 +64,15 @@ function Dashboard({ customer, source }) {
           <ForecastChart points={scenario.points} baseline={baseline} changed={changed} />
         </div>
 
-        <CoachChat customer={customer} context={context} adjust={adjust} />
+        <CoachChat
+          customer={customer}
+          context={context}
+          adjust={adjust}
+          onApplyPlan={(p) => {
+            setAdjust({ diningCut: p.diningCut, extraCard: p.extraCard, incomeChange: p.incomeChange });
+            document.getElementById("whatif")?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+        />
       </main>
     </div>
   );
